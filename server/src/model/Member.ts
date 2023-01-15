@@ -1,5 +1,5 @@
 import {getModelForClass, modelOptions, prop} from '@typegoose/typegoose'
-import permissions from '../configuration/permissions'
+import {Role} from './Role'
 
 @modelOptions({
 	schemaOptions: {
@@ -9,24 +9,23 @@ import permissions from '../configuration/permissions'
 export class Member {
 	public _id: string
 
-	@prop({required: true, default: Date.now()})
+	@prop({required: true, default: Date.now(), type: () => Date})
 	public joinedAt: Date
 
 	@prop({required: true, default: Date.now()})
 	public updatedAt: Date
 
-	@prop({ requied: true })
+	@prop({required: true})
 	public userId: string
 
-	@prop({ requied: true })
+	@prop({required: true})
 	public guildId: string
 
-    @prop({ required: true, default: [] })
-    public permissions: Array<keyof typeof permissions>
+	@prop({required: true, default: [], ref: () => Role})
+	public Role: Array<string>
 
-    @prop({ default: false })
-    public isOwner: boolean
-
+	@prop({default: false})
+	public isOwner: boolean
 }
 
 export const MemberModel = getModelForClass(Member)

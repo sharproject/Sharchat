@@ -3,9 +3,13 @@ import {MemberUtil} from '../util/Member'
 import {MemberModel} from '../model/Member'
 import {GuildModel} from '../model/Guild'
 import {Response} from '../typings/ResponseInput'
-import {Controller, ControllerType} from '../typings/ControllerType'
+import {Controller, ControllerType} from '../helper/ControllerType'
+import {AuthMiddleware} from '../middleware/auth'
 
-export const JoinGuild: ControllerType<true> = async (req: Request, res: Response<true>) => {
+export const JoinGuild: ControllerType<true> = async (
+	req: Request,
+	res: Response<true>
+) => {
 	const id = req.body.id
 	if (!id) {
 		res.status(400).json({
@@ -39,11 +43,13 @@ export const JoinGuild: ControllerType<true> = async (req: Request, res: Respons
 			isOwner: false,
 		})
 
-		guild.members.push(member.userId)
+		guild.members.push(member._id)
 		await guild.save()
 
 		res.status(201).send({
 			message: 'Joined guild',
+			guild,
+			member,
 		})
 	} catch (error) {
 		console.log(error)
@@ -53,13 +59,16 @@ export const JoinGuild: ControllerType<true> = async (req: Request, res: Respons
 	}
 }
 
-JoinGuild.ControllerName = "join"
-JoinGuild.RequestMethod = "post"
+JoinGuild.ControllerName = 'join'
+JoinGuild.RequestMethod = 'post'
 JoinGuild.RequestBody = {
-	id: "string"
+	id: 'string',
 }
 
-export const LeaveGuild: ControllerType<true> = async (req: Request, res: Response<true>) => {
+export const LeaveGuild: ControllerType<true> = async (
+	req: Request,
+	res: Response<true>
+) => {
 	const id = req.body.id
 	if (!id) {
 		res.status(400).json({
@@ -98,12 +107,17 @@ export const LeaveGuild: ControllerType<true> = async (req: Request, res: Respon
 
 		member = await MemberUtil.DeleteMember(guild._id, res.locals.userId)
 
-		const newGuildMembers = guild.members.filter((m) => m !== res.locals.userId)
-		guild.members = newGuildMembers
+		guild.update({
+			$pull: {
+				members: member._id,
+			},
+		})
 		await guild.save()
 
 		res.status(200).send({
 			message: 'Left guild',
+			guild,
+			member,
 		})
 	} catch (error) {
 		console.log(error)
@@ -112,14 +126,16 @@ export const LeaveGuild: ControllerType<true> = async (req: Request, res: Respon
 		})
 	}
 }
+;(LeaveGuild.ControllerName = 'leave'),
+	(LeaveGuild.RequestMethod = 'delete'),
+	(LeaveGuild.RequestBody = {
+		id: 'string',
+	})
 
-LeaveGuild.ControllerName = "leave",
-LeaveGuild.RequestMethod = "delete",
-LeaveGuild.RequestBody = {
-	id: "string"
-}
-
-export const RemoveMember: ControllerType<true> = async (req: Request, res: Response<true>) => {
+export const RemoveMember: ControllerType<true> = async (
+	req: Request,
+	res: Response<true>
+) => {
 	const userId = req.body.userId
 	const guildId = req.body.guildId
 	if (!userId || !guildId) {
@@ -150,8 +166,12 @@ export const RemoveMember: ControllerType<true> = async (req: Request, res: Resp
 			return
 		}
 
+		let permissions = await MemberUtil.CheckPermissions(
+			requested.userId,
+			requested.guildId
+		)
 		if (
-			!requested.permissions.find((v) => v == 'admin' || v == 'moderator') &&
+			!permissions.permissions.canKickMember() &&
 			!requested.isOwner &&
 			requested.userId !== guild.owner
 		) {
@@ -173,17 +193,18 @@ export const RemoveMember: ControllerType<true> = async (req: Request, res: Resp
 			return
 		}
 
-		if (
-			member.permissions.find((v) => v == 'admin' || v == 'moderator') ||
-			member.isOwner ||
-			member.userId == guild.owner
-		) {
-			res.status(403).send({
-				message:
-					"You can't remove this member from the guild. They are Admin, Moderator or Server Owner",
-			})
-			return
-		}
+		// TODO:Check role is hight
+		// if (
+		// 	permissions.permissions.find((v) => v == 'admin' || v == 'moderator') ||
+		// 	member.isOwner ||
+		// 	member.userId == guild.owner
+		// ) {
+		// 	res.status(403).send({
+		// 		message:
+		// 			"You can't remove this member from the guild. They are Admin, Moderator or Server Owner",
+		// 	})
+		// 	return
+		// }
 
 		member = await MemberUtil.DeleteMember(guild._id, userId)
 
@@ -193,6 +214,8 @@ export const RemoveMember: ControllerType<true> = async (req: Request, res: Resp
 
 		res.status(200).send({
 			message: 'Removed member from the guild',
+			guild,
+			member,
 		})
 	} catch (error) {
 		console.log(error)
@@ -201,16 +224,28 @@ export const RemoveMember: ControllerType<true> = async (req: Request, res: Resp
 		})
 	}
 }
+;(RemoveMember.ControllerName = 'remove'),
+	(RemoveMember.RequestMethod = 'delete'),
+	(RemoveMember.RequestBody = {
+		userId: 'string',
+		guildId: 'string',
+	})
 
-RemoveMember.ControllerName = "remove",
-RemoveMember.RequestMethod = "delete",
-RemoveMember.RequestBody = {
-	userId: "string",
-	guildId: "string"
+export const GetMemberInfo: ControllerType = async (req, res) => {
+	return res.json(MemberModel.findOne({
+		guildId: req.params.guildId,
+		userId:req.params.userId
+	}))
 }
+GetMemberInfo.ControllerName = 'info'
+GetMemberInfo.RequestMethod = 'get'
+GetMemberInfo.RequestQuery = {
+	guildId: 'string',
+	userId: 'string',
+}
+GetMemberInfo.BlockOtherMiddleware = true
 
-export const MemberController = new Controller([
-	JoinGuild,
-	LeaveGuild,
-	RemoveMember,
-])
+export const MemberController = new Controller(
+	[JoinGuild, LeaveGuild, RemoveMember,GetMemberInfo],
+	'/member'
+).SetMiddleware([AuthMiddleware])

@@ -7,20 +7,19 @@ import {
 	SocketData,
 	HandleEvent,
 } from './socket'
-import UserRouter from './router/User'
-import GuildRouter from './router/Guild'
-import MemberRouter from './router/Member'
 import cors from 'cors'
 import mongoose from 'mongoose'
 import path from 'path'
 import dotenv from 'dotenv'
 import {DefaultEventsMap} from 'socket.io/dist/typed-events'
-import {AuthMiddleware} from './middleware/auth'
+import {ControllerDocumentRouterHandler} from './helper/ControllerType'
+import {SetupPath} from './router'
+
 dotenv.config({
 	path: path.join(__dirname, '..', '.env'),
 })
 
-const app = express()
+const app = express(); 
 app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({extended: true}))
@@ -39,10 +38,14 @@ if (!process.env.DB_URL) {
 
 mongoose.connect(process.env.DB_URL, {})
 
-app.use('/user', UserRouter)
-app.use('/guild', AuthMiddleware, GuildRouter)
-app.use('/member', AuthMiddleware, MemberRouter)
 
+SetupPath(app)
+
+app.get('/routes', (_req, res) => {
+	res.json(ControllerDocumentRouterHandler.json())
+})
+
+app.disable('x-powered-by');
 HttpServer.listen(3000, () => {
 	console.log('Server listening on port 3000')
 })

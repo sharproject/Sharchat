@@ -6,7 +6,7 @@ import {getModelForClass, modelOptions, prop} from '@typegoose/typegoose'
 	},
 })
 export class User {
-	@prop({required: true})
+	@prop({required: true, type: () => String})
 	public username: string
 
 	@prop({required: true})
@@ -23,9 +23,8 @@ export class User {
 	@prop({required: true, default: Date.now()})
 	public updatedAt: Date
 
-	@prop({ required: true, default: [] })
+	@prop({required: true, default: [], type: () => [String]})
 	public guilds: string[]
-
 }
 
 export const UserModel = getModelForClass(User)

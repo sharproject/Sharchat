@@ -22,6 +22,9 @@ export class Message {
 
 	@prop({required: false})
 	public threadId: string
+
+	@prop()
+	public memberId: string
 }
 
 export const MessageModel = getModelForClass(Message)

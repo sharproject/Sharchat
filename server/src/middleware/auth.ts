@@ -1,7 +1,8 @@
 import {NextFunction, Request, Response} from 'express'
 import {UserUtil} from '../util/User'
+import { TControllerMiddlewareFn } from '../helper/ControllerType'
 
-export const AuthMiddleware = async (
+export const AuthMiddleware : TControllerMiddlewareFn = async (
 	req: Request,
 	res: Response,
 	next: NextFunction
@@ -27,3 +28,6 @@ export const AuthMiddleware = async (
 		})
 	}
 }
+AuthMiddleware.MiddlewareName = "AuthMiddleware"
+AuthMiddleware.CustomMiddleware = "auth middleware"
+AuthMiddleware.description = "check request is authorization"

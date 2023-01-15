@@ -1,16 +1,18 @@
 import {GuildModel} from '../model/Guild'
 import {MemberModel} from '../model/Member'
-import {Controller, ControllerType} from '../typings/ControllerType'
+import {Controller, ControllerType} from '../helper/ControllerType'
 import {MemberUtil} from '../util/Member'
+import {AuthMiddleware} from '../middleware/auth'
 
 export const CreateGuild: ControllerType<true> = async (req, res) => {
-	const {name, description} = req.body
-	if (!name || !description) {
+	const {name} = req.body
+	if (!name) {
 		res.status(400).json({
 			message: 'Missing required fields',
 		})
 		return
 	}
+	const description = req.body.description && ''
 
 	try {
 		const guild = await new GuildModel({
@@ -23,13 +25,14 @@ export const CreateGuild: ControllerType<true> = async (req, res) => {
 			isOwner: true,
 		})
 
-		guild.members.push(member.userId)
+		guild.members.push(member._id)
 
 		await guild.save()
 
 		res.status(201).json({
 			message: 'Guild created',
 			guild,
+			member,
 		})
 	} catch (error) {
 		console.log(error)
@@ -41,8 +44,8 @@ export const CreateGuild: ControllerType<true> = async (req, res) => {
 CreateGuild.ControllerName = 'create'
 CreateGuild.RequestMethod = 'post'
 CreateGuild.RequestBody = {
-	name: "string",
-	description: String,
+	name: 'string',
+	description: {type: 'string', optional: true},
 }
 
 export const DeleteGuild: ControllerType<true> = async (req, res) => {
@@ -64,10 +67,7 @@ export const DeleteGuild: ControllerType<true> = async (req, res) => {
 		}
 		const result = await MemberUtil.CheckPermissions(
 			res.locals.userId,
-			guild._id,
-			{
-				isOwner: true,
-			}
+			guild._id
 		)
 		if (!result.isOwner) {
 			res.status(403).json({
@@ -89,6 +89,7 @@ export const DeleteGuild: ControllerType<true> = async (req, res) => {
 
 		res.status(200).json({
 			message: 'Guild deleted',
+			guild,
 		})
 	} catch (error) {
 		console.log(error)
@@ -100,7 +101,7 @@ export const DeleteGuild: ControllerType<true> = async (req, res) => {
 DeleteGuild.ControllerName = 'delete'
 DeleteGuild.RequestMethod = 'delete'
 DeleteGuild.RequestBody = {
-	id: "string",
+	id: 'string',
 }
 
 export const EditGuild: ControllerType<true> = async (req, res) => {
@@ -122,16 +123,9 @@ export const EditGuild: ControllerType<true> = async (req, res) => {
 		}
 		const result = await MemberUtil.CheckPermissions(
 			res.locals.userId,
-			guild._id,
-			{
-				isOwner: true,
-			}
+			guild._id
 		)
-		if (
-			!result.isOwner &&
-			!result.permissions.includes('admin') &&
-			!result.permissions.includes('server_manager')
-		) {
+		if (!result.isOwner && !result.permissions.canEditGuild()) {
 			res.status(403).json({
 				message: "Requested member doesn't have permission to edit",
 			})
@@ -163,19 +157,27 @@ export const EditGuild: ControllerType<true> = async (req, res) => {
 EditGuild.ControllerName = 'edit'
 EditGuild.RequestMethod = 'patch'
 EditGuild.RequestBody = {
-	id: "string",
+	id: 'string',
 	name: {
-		type: "string",
+		type: 'string',
 		optional: true,
 	},
 	description: {
-		type: "string",
+		type: 'string',
 		optional: true,
 	},
 }
 
-export const GuildController = new Controller([
-	CreateGuild,
-	DeleteGuild,
-	EditGuild,
-])
+export const GetGuild: ControllerType = async (req, res) => {
+	return res.json(await GuildModel.findById(req.params.guildId))
+}
+GetGuild.ControllerName = '/info'
+GetGuild.RequestMethod = 'get'
+GetGuild.RequestQuery = {
+	guildId: 'string',
+}
+
+export const GuildController = new Controller(
+	[CreateGuild, DeleteGuild, EditGuild,GetGuild],
+	'/guild'
+).SetMiddleware([AuthMiddleware])

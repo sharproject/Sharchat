@@ -1,4 +1,5 @@
 import {getModelForClass, modelOptions, prop} from '@typegoose/typegoose'
+import {User} from './User'
 
 @modelOptions({
 	schemaOptions: {
@@ -8,7 +9,7 @@ import {getModelForClass, modelOptions, prop} from '@typegoose/typegoose'
 export class Channel {
 	public _id: string
 
-	@prop({required: true, default: Date.now()})
+	@prop({required: true, default: Date.now(), type: () => Date})
 	public createdAt: Date
 
 	@prop({required: true, default: Date.now()})
@@ -17,14 +18,21 @@ export class Channel {
 	@prop({required: true})
 	public name: string
 
-	@prop({required: true})
+	@prop({required: true, default: ''})
 	public description: string
 
 	@prop({required: true})
 	public guild: string
 
-	@prop({required: true})
+	@prop({required: true, ref: () => User})
 	public owner: string
+
+	@prop({
+		required: true,
+		default: [],
+		type: () => [String],
+	})
+	public message: string[]
 }
 
 export const ChannelModel = getModelForClass(Channel)

@@ -8,7 +8,12 @@ import {getModelForClass, modelOptions, prop} from '@typegoose/typegoose'
 export class Session {
 	public _id: string
 
-	@prop({required: true, default: Date.now(),expires: 60 * 60 * 24})
+	@prop({
+		required: true,
+		default: Date.now(),
+		expires: 60 * 60 * 24,
+		type: () => Date,
+	})
 	public createdAt: Date
 
 	@prop({required: true, default: Date.now()})
@@ -17,5 +22,4 @@ export class Session {
 	@prop({required: true})
 	UserId: string
 }
-
 export const SessionModel = getModelForClass(Session)

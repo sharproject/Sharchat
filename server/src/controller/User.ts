@@ -3,7 +3,7 @@ import {UserModel} from '../model/User'
 
 import bcrypt from 'bcrypt'
 import {UserUtil} from '../util/User'
-import {ControllerType, Controller} from '../typings/ControllerType'
+import {ControllerType, Controller} from '../helper/ControllerType'
 
 export const RegisterUser: ControllerType = async (
 	req: Request,
@@ -15,7 +15,6 @@ export const RegisterUser: ControllerType = async (
 			message: 'Please fill all the fields',
 		})
 	}
-
 	try {
 		const alreadyUser =
 			(await UserModel.findOne({email: email})) ||
@@ -36,6 +35,7 @@ export const RegisterUser: ControllerType = async (
 		return res.status(201).json({
 			message: 'User created successfully',
 			token: await UserUtil.GenToken(user._id),
+			user,
 		})
 	} catch (error) {
 		return res.status(500).json({
@@ -46,9 +46,9 @@ export const RegisterUser: ControllerType = async (
 RegisterUser.ControllerName = 'register'
 RegisterUser.RequestMethod = 'post'
 RegisterUser.RequestBody = {
-	email: "string",
-	username: "string",
-	password: "string",
+	email: 'string',
+	username: 'string',
+	password: 'string',
 }
 
 export const LoginUser: ControllerType<false> = async (
@@ -80,6 +80,7 @@ export const LoginUser: ControllerType<false> = async (
 		return res.status(200).json({
 			message: 'Login successfully',
 			token: await UserUtil.GenToken(user._id),
+			user,
 		})
 	} catch (error) {
 		return res.status(500).json({
@@ -91,8 +92,17 @@ export const LoginUser: ControllerType<false> = async (
 LoginUser.ControllerName = 'login'
 LoginUser.RequestMethod = 'post'
 LoginUser.RequestBody = {
-	emailOrUsername: "string",
-	password: "string",
+	emailOrUsername: 'string',
+	password: 'string',
 }
 
-export const UserController = new Controller([RegisterUser, LoginUser])
+export const GetUserInfo: ControllerType<false> = async (req, res) => {
+	return res.json(await UserModel.findById(req.params.id))
+}
+GetUserInfo.ControllerName = 'info'
+GetUserInfo.RequestMethod = 'get'
+GetUserInfo.RequestQuery = {
+	id: 'string',
+}
+
+export const UserController = new Controller([RegisterUser, LoginUser], '/user')
