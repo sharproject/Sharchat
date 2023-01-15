@@ -84,7 +84,11 @@ export class ControllerDocument {
 						conInfo[k] = con[k as keyof typeof con]
 					}
 				}
-				controllerJson['path'][con.ControllerName] = conInfo
+				controllerJson['path'][
+					con.ControllerName.startsWith('/')
+						? con.ControllerName
+						: `/${con.ControllerName}`
+				] = conInfo
 			}
 			for (let middleware of c.controller.allMiddleware) {
 				let middlewareInfo = {} as any
