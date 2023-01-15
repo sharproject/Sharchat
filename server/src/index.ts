@@ -19,7 +19,7 @@ dotenv.config({
 	path: path.join(__dirname, '..', '.env'),
 })
 
-const app = express(); 
+const app = express()
 app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({extended: true}))
@@ -38,14 +38,14 @@ if (!process.env.DB_URL) {
 
 mongoose.connect(process.env.DB_URL, {})
 
-
 SetupPath(app)
 
 app.get('/routes', (_req, res) => {
 	res.json(ControllerDocumentRouterHandler.json())
 })
 
-app.disable('x-powered-by');
-HttpServer.listen(3000, () => {
-	console.log('Server listening on port 3000')
+app.disable('x-powered-by')
+const PORT = process.env.PORT || 3000
+HttpServer.listen(PORT, () => {
+	console.log(`Server listening on port ${PORT}`)
 })
