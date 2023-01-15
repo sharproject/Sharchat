@@ -18,7 +18,7 @@ export class Channel {
 	@prop({required: true})
 	public name: string
 
-	@prop({required: true})
+	@prop({required: true, default: ''})
 	public description: string
 
 	@prop({required: true})
@@ -26,6 +26,13 @@ export class Channel {
 
 	@prop({required: true, ref: () => User})
 	public owner: string
+
+	@prop({
+		required: true,
+		default: [],
+		type: () => [String],
+	})
+	public message: string[]
 }
 
 export const ChannelModel = getModelForClass(Channel)

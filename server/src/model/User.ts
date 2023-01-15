@@ -23,7 +23,7 @@ export class User {
 	@prop({required: true, default: Date.now()})
 	public updatedAt: Date
 
-	@prop({required: true, default: []})
+	@prop({required: true, default: [], type: () => [String]})
 	public guilds: string[]
 }
 

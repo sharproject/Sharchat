@@ -7,23 +7,24 @@ import {Router} from 'express'
 export interface ControllerInformation {
 	RequestBody?: {
 		[key: string]:
-			| any
 			| {
 					optional?: boolean
-					type?: any
+					type: RequestDataType
 			  }
+			| RequestDataType
 	}
 	RequestQuery?: {
 		[key: string]:
-			| any
 			| {
 					optional?: boolean
-					type?: any
+					type: RequestDataType
 			  }
+			| RequestDataType
 	}
 	// will not use if that is middleware recommend fill it empty
 	ControllerName: string
 	RequestMethod?: 'get' | 'post' | 'put' | 'delete' | 'patch'
+	BlockOtherMiddleware?: boolean
 }
 
 export interface ControllerType<auth = false, TResponse = unknown>
@@ -43,8 +44,9 @@ export type TControllerMiddlewareFn<auth = false, TResponse = unknown> = ((
 	res: Response<auth, TResponse>,
 	next: NextFunction
 ) => any) & {
-	MiddlewareName?: string
+	MiddlewareName: string
 	description?: string
+	CustomMiddleware?: string
 }
 interface ControllerDocumentJsonReturnType {
 	api: {
@@ -62,9 +64,35 @@ export class ControllerDocument {
 		let result = {api: {}} as ControllerDocumentJsonReturnType
 		for (let c of this.controller) {
 			// group
-			let controllerJson = {} as any
+			let controllerJson = {path: {}, middleware: {}} as any
 			for (let con of c.controller.controller) {
-				controllerJson[con.ControllerName] = con
+				let conInfo = {} as any
+				for (let k in con) {
+					if (k == 'Middleware') {
+						let middleware = con[
+							k as keyof typeof con
+						] as TControllerMiddlewareFn[]
+						let middlewareInfo = middleware.map((v) => {
+							let result = {} as any
+							for (let k in v) {
+								result[k] = v[k as keyof typeof v]
+							}
+							return result
+						})
+						conInfo[k] = middlewareInfo
+					} else {
+						conInfo[k] = con[k as keyof typeof con]
+					}
+				}
+				controllerJson['path'][con.ControllerName] = conInfo
+			}
+			for (let middleware of c.controller.allMiddleware) {
+				let middlewareInfo = {} as any
+				for (let k in middleware) {
+					middlewareInfo[k] = middleware[k as keyof typeof middleware]
+				}
+
+				controllerJson['middleware'][middleware.MiddlewareName] = middlewareInfo
 			}
 			result.api[c.name] = controllerJson
 		}
@@ -92,7 +120,7 @@ export class Controller {
 		for (const [name, controller] of this.controllers) {
 			router[controller.RequestMethod || 'post'](
 				name.startsWith('/') ? name : `/${name}`,
-				...this.allMiddleware,
+				...(controller?.BlockOtherMiddleware == true ? [] : this.allMiddleware),
 				...(controller.Middleware ? controller.Middleware : []),
 				this.checkRequestBody.bind(this),
 				this.checkRequestQuery.bind(this),
@@ -128,7 +156,7 @@ export class Controller {
 				[key: string]: any
 			} = {}
 			for (const key in controller.RequestBody) {
-				if (!req.body[key] && !controller.RequestBody[key].optional) {
+				if (!req.body[key] && !(controller.RequestBody[key] as any).optional) {
 					res.status(400).json({
 						message: 'Missing required fields',
 					})
@@ -136,9 +164,10 @@ export class Controller {
 					return
 				}
 
+				let tmp = controller.RequestBody[key]
 				if (
-					!checkType(controller.RequestBody[key], req.body[key]) &&
-					!controller.RequestBody[key].optional
+					!checkType(typeof tmp == 'string' ? tmp : tmp.type, req.body[key]) &&
+					!(tmp as any).optional
 				) {
 					res.status(400).json({
 						message: 'Missing required fields',
@@ -164,14 +193,21 @@ export class Controller {
 		}
 		if (controller.RequestQuery) {
 			for (const key in controller.RequestQuery) {
-				if (!req.query[key]) {
+				if (
+					!req.query[key] &&
+					!(controller.RequestQuery[key] as any).optional
+				) {
 					res.status(400).json({
 						message: 'Missing required fields',
 					})
 
 					return
 				}
-				if (!checkType(controller.RequestQuery[key], req.query[key])) {
+				let tmp = controller.RequestQuery[key]
+				if (
+					!checkType(typeof tmp == 'string' ? tmp : tmp.type, req.query[key]) &&
+					!(tmp as any).optional
+				) {
 					res.status(400).json({
 						message: 'Missing required fields',
 					})
@@ -198,7 +234,9 @@ export class Controller {
 	}
 }
 
-function checkType(type: 'array' | 'number' | 'string' | 'object', value: any) {
+function checkType(type: RequestDataType, value: any) {
 	if (type == 'array') return Array.isArray(value)
 	return typeof value == type
 }
+
+type RequestDataType = 'array' | 'number' | 'string' | 'object'

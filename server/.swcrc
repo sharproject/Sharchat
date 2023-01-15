@@ -9,8 +9,8 @@
     "target": "es2020",
     "baseUrl": ".",
     "transform": {
-        "legacyDecorator": true,
-		"decoratorMetadata": true
+      "legacyDecorator": true,
+      "decoratorMetadata": true
     }
   },
   "module": {

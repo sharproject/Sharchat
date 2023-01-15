@@ -15,7 +15,6 @@ export const RegisterUser: ControllerType = async (
 			message: 'Please fill all the fields',
 		})
 	}
-
 	try {
 		const alreadyUser =
 			(await UserModel.findOne({email: email})) ||
@@ -36,6 +35,7 @@ export const RegisterUser: ControllerType = async (
 		return res.status(201).json({
 			message: 'User created successfully',
 			token: await UserUtil.GenToken(user._id),
+			user,
 		})
 	} catch (error) {
 		return res.status(500).json({
@@ -80,6 +80,7 @@ export const LoginUser: ControllerType<false> = async (
 		return res.status(200).json({
 			message: 'Login successfully',
 			token: await UserUtil.GenToken(user._id),
+			user,
 		})
 	} catch (error) {
 		return res.status(500).json({
@@ -95,4 +96,13 @@ LoginUser.RequestBody = {
 	password: 'string',
 }
 
-export const UserController = new Controller([RegisterUser, LoginUser],"/user")
+export const GetUserInfo: ControllerType<false> = async (req, res) => {
+	return res.json(await UserModel.findById(req.params.id))
+}
+GetUserInfo.ControllerName = 'info'
+GetUserInfo.RequestMethod = 'get'
+GetUserInfo.RequestQuery = {
+	id: 'string',
+}
+
+export const UserController = new Controller([RegisterUser, LoginUser], '/user')

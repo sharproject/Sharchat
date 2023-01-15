@@ -13,13 +13,13 @@ import path from 'path'
 import dotenv from 'dotenv'
 import {DefaultEventsMap} from 'socket.io/dist/typed-events'
 import {ControllerDocumentRouterHandler} from './helper/ControllerType'
-import { SetupPath } from './router'
+import {SetupPath} from './router'
 
 dotenv.config({
 	path: path.join(__dirname, '..', '.env'),
 })
 
-const app = express()
+const app = express(); 
 app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({extended: true}))
@@ -38,13 +38,14 @@ if (!process.env.DB_URL) {
 
 mongoose.connect(process.env.DB_URL, {})
 
+
 SetupPath(app)
 
-app.get('/hello', (_req, res) => {
-	console.dir(ControllerDocumentRouterHandler.json())
-	res.send('hello')
+app.get('/routes', (_req, res) => {
+	res.json(ControllerDocumentRouterHandler.json())
 })
 
+app.disable('x-powered-by');
 HttpServer.listen(3000, () => {
 	console.log('Server listening on port 3000')
 })

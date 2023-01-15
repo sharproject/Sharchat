@@ -28,3 +28,6 @@ export const AuthMiddleware : TControllerMiddlewareFn = async (
 		})
 	}
 }
+AuthMiddleware.MiddlewareName = "AuthMiddleware"
+AuthMiddleware.CustomMiddleware = "auth middleware"
+AuthMiddleware.description = "check request is authorization"
