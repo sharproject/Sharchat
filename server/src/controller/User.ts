@@ -3,7 +3,7 @@ import {UserModel} from '../model/User'
 
 import bcrypt from 'bcrypt'
 import {UserUtil} from '../util/User'
-import {ControllerType, Controller} from '../typings/ControllerType'
+import {ControllerType, Controller} from '../helper/ControllerType'
 
 export const RegisterUser: ControllerType = async (
 	req: Request,
@@ -46,9 +46,9 @@ export const RegisterUser: ControllerType = async (
 RegisterUser.ControllerName = 'register'
 RegisterUser.RequestMethod = 'post'
 RegisterUser.RequestBody = {
-	email: "string",
-	username: "string",
-	password: "string",
+	email: 'string',
+	username: 'string',
+	password: 'string',
 }
 
 export const LoginUser: ControllerType<false> = async (
@@ -91,8 +91,8 @@ export const LoginUser: ControllerType<false> = async (
 LoginUser.ControllerName = 'login'
 LoginUser.RequestMethod = 'post'
 LoginUser.RequestBody = {
-	emailOrUsername: "string",
-	password: "string",
+	emailOrUsername: 'string',
+	password: 'string',
 }
 
-export const UserController = new Controller([RegisterUser, LoginUser])
+export const UserController = new Controller([RegisterUser, LoginUser],"/user")

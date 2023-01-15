@@ -1,7 +1,9 @@
 import {GuildModel} from '../model/Guild'
 import {MemberModel} from '../model/Member'
-import {Controller, ControllerType} from '../typings/ControllerType'
+import {Controller, ControllerType} from '../helper/ControllerType'
 import {MemberUtil} from '../util/Member'
+import { AuthMiddleware } from '../middleware/auth'
+import { ChannelController } from './Channel'
 
 export const CreateGuild: ControllerType<true> = async (req, res) => {
 	const {name, description} = req.body
@@ -23,7 +25,7 @@ export const CreateGuild: ControllerType<true> = async (req, res) => {
 			isOwner: true,
 		})
 
-		guild.members.push(member.userId)
+		guild.members.push(member._id)
 
 		await guild.save()
 
@@ -41,7 +43,7 @@ export const CreateGuild: ControllerType<true> = async (req, res) => {
 CreateGuild.ControllerName = 'create'
 CreateGuild.RequestMethod = 'post'
 CreateGuild.RequestBody = {
-	name: "string",
+	name: 'string',
 	description: String,
 }
 
@@ -100,7 +102,7 @@ export const DeleteGuild: ControllerType<true> = async (req, res) => {
 DeleteGuild.ControllerName = 'delete'
 DeleteGuild.RequestMethod = 'delete'
 DeleteGuild.RequestBody = {
-	id: "string",
+	id: 'string',
 }
 
 export const EditGuild: ControllerType<true> = async (req, res) => {
@@ -163,13 +165,13 @@ export const EditGuild: ControllerType<true> = async (req, res) => {
 EditGuild.ControllerName = 'edit'
 EditGuild.RequestMethod = 'patch'
 EditGuild.RequestBody = {
-	id: "string",
+	id: 'string',
 	name: {
-		type: "string",
+		type: 'string',
 		optional: true,
 	},
 	description: {
-		type: "string",
+		type: 'string',
 		optional: true,
 	},
 }
@@ -178,4 +180,4 @@ export const GuildController = new Controller([
 	CreateGuild,
 	DeleteGuild,
 	EditGuild,
-])
+],"/guild").SetMiddleware([AuthMiddleware]).SetSubController([ChannelController])

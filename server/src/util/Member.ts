@@ -5,6 +5,7 @@ import path from 'path'
 import dotenv from 'dotenv'
 
 import permissions from '../configuration/permissions'
+import {RoleModel} from '../model/Role'
 
 interface CheckPermissionsOptions {
 	some?: Array<keyof typeof permissions> | null
@@ -30,7 +31,7 @@ export const MemberUtil = {
 			throw new Error('Guild ID/User ID is not provided')
 		}
 
-		if(!options.isOwner) options.isOwner = false
+		if (!options.isOwner) options.isOwner = false
 
 		const user = await UserModel.findById(userId)
 		if (!user) {
@@ -52,7 +53,7 @@ export const MemberUtil = {
 	},
 	DeleteMember: async (
 		guildId: string | undefined,
-		userId: string | undefined,
+		userId: string | undefined
 	) => {
 		if (!userId) {
 			throw new Error('Guild ID/User ID is not provided')
@@ -65,9 +66,9 @@ export const MemberUtil = {
 
 		const member = await MemberModel.findOne({
 			userId: user._id,
-			guildId: guildId
+			guildId: guildId,
 		})
-		if(!member) {
+		if (!member) {
 			throw new Error('Member not found')
 		}
 		await member.delete()
@@ -96,7 +97,7 @@ export const MemberUtil = {
 
 		const member = await MemberModel.findOne({
 			userId: user._id,
-			guildId: guild._id
+			guildId: guild._id,
 		})
 
 		if (!member) {
@@ -109,7 +110,25 @@ export const MemberUtil = {
 			every?: boolean
 			isOwner?: boolean
 		} = {
-			permissions: member.permissions,
+			permissions: member.isOwner
+				? (Object.keys(permissions) as Array<keyof typeof permissions>)
+				: [],
+			isOwner: member.isOwner,
+		}
+
+		if (!member.isOwner) {
+			const allUserPermissions = []
+
+			for (let role_id in member.Role) {
+				let role = await RoleModel.findById(role_id)
+				if (!role) {
+					member.Role = member.Role.filter((id) => id != role_id)
+					continue
+				}
+				let permissions = role.permissions.map((i) => i.name)
+				allUserPermissions.push(...permissions)
+			}
+			await member.save()
 		}
 
 		if (some || every || isOwner) {
