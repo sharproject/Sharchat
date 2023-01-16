@@ -31,6 +31,12 @@ export class Guild {
 
 	@prop({required: true, default: [], ref: () => Channel})
 	public channels: string[]
+
+	@prop({required: true, default: ''})
+	public everyoneRole: string
+
+	@prop({required: true, default: [], type: () => [String]})
+	public role: string[]
 }
 
 export const GuildModel = getModelForClass(Guild)

@@ -26,9 +26,15 @@ export class Role {
 
 	@prop({required: true, default: false})
 	public hide: boolean
+
+	@prop({required: true, default: 1})
+	public position: number
+
+	@prop({required: true, default: [], type: () => [String]})
+	member: string[]
 }
 
-interface PermissionType {
+export interface PermissionType {
 	name: keyof typeof permissions
 	metadata?: Metadata
 }

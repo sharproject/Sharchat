@@ -1,4 +1,4 @@
-import {MemberModel} from '../model/Member'
+import {Member, MemberModel} from '../model/Member'
 import {UserModel} from '../model/User'
 import {GuildModel} from '../model/Guild'
 import path from 'path'
@@ -6,6 +6,7 @@ import dotenv from 'dotenv'
 
 import permissions from '../configuration/permissions'
 import {RoleModel} from '../model/Role'
+import {DocumentType} from '@typegoose/typegoose'
 
 dotenv.config({
 	path: path.join(__dirname, '..', '..', '.env'),
@@ -109,16 +110,7 @@ export const MemberUtil = {
 		if (!member) {
 			throw new Error('Member not found')
 		}
-		const metadata = {
-			ViewChannel: {
-				Block: [] as string[],
-				Allow: [] as string[],
-			},
-			SendMessage: {
-				Block: [] as string[],
-				Allow: [] as string[],
-			},
-		}
+
 		let permissionUtil = new PermissionUtilClass(member.isOwner)
 
 		if (!member.isOwner) {
@@ -181,13 +173,32 @@ class PermissionUtilClass {
 		this.permission.push(...permissions)
 		return false
 	}
-	canKickMember() {
-		return this.permission.includes("kick_member")
+	canKickMember(another: DocumentType<Member>) {
+		another.Role
+		return this.permission.includes('kick_member')
 	}
 	canEditGuild() {
-		return this.permission.includes("admin") || this.permission.includes("server_manager")
+		return (
+			this.permission.includes('admin') ||
+			this.permission.includes('server_manager')
+		)
 	}
 	canDeleteGuild() {
 		return this.isOwner
+	}
+	canCreateChannel() {
+		return this.permission.includes('channel_manager')
+	}
+	canDeleteChannel(channelID: string) {
+		return (
+			this.permission.includes('channel_manager') &&
+			!this.metadata.ViewChannel.Block.includes(channelID)
+		)
+	}
+	canEditChannel(channelID: string) {
+		return (
+			this.permission.includes('channel_manager') &&
+			!this.metadata.ViewChannel.Block.includes(channelID)
+		)
 	}
 }

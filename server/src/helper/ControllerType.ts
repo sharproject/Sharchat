@@ -4,23 +4,29 @@ import {NextFunction, Request} from 'express'
 import {Response} from '../typings/ResponseInput'
 import {Router} from 'express'
 
+type RequestUserInputValueType =
+	| {
+			optional?: boolean
+			type: 'string' | 'number'
+	  }
+	| {
+			optional?: boolean
+			type: 'array'
+			childType: RequestDataType | RequestUserInputValueType
+	  }
+	| {
+			optional?: boolean
+			type: 'object'
+			childType: RequestInput
+	  }
+	| RequestDataType
+interface RequestInput {
+	[key: string]: RequestUserInputValueType
+}
+
 export interface ControllerInformation {
-	RequestBody?: {
-		[key: string]:
-			| {
-					optional?: boolean
-					type: RequestDataType
-			  }
-			| RequestDataType
-	}
-	RequestQuery?: {
-		[key: string]:
-			| {
-					optional?: boolean
-					type: RequestDataType
-			  }
-			| RequestDataType
-	}
+	RequestBody?: RequestInput
+	RequestQuery?: RequestInput
 	// will not use if that is middleware recommend fill it empty
 	ControllerName: string
 	RequestMethod?: 'get' | 'post' | 'put' | 'delete' | 'patch'
@@ -156,29 +162,12 @@ export class Controller {
 			return
 		}
 		if (controller.RequestBody) {
-			const RequestBody: {
-				[key: string]: any
-			} = {}
-			for (const key in controller.RequestBody) {
-				if (!req.body[key] && !(controller.RequestBody[key] as any).optional) {
-					res.status(400).json({
-						message: 'Missing required fields',
-					})
-
-					return
-				}
-
-				let tmp = controller.RequestBody[key]
-				if (
-					!checkType(typeof tmp == 'string' ? tmp : tmp.type, req.body[key]) &&
-					!(tmp as any).optional
-				) {
-					res.status(400).json({
-						message: 'Missing required fields',
-					})
-					return
-				}
-				RequestBody[key] = req.body[key]
+			const [RequestBody, error] = CheckRequestInput(
+				controller.RequestBody,
+				req.body
+			)
+			if (error) {
+				res.status(error.status).send(error.message)
 			}
 			req.body = RequestBody
 		}
@@ -196,27 +185,15 @@ export class Controller {
 			return
 		}
 		if (controller.RequestQuery) {
-			for (const key in controller.RequestQuery) {
-				if (
-					!req.query[key] &&
-					!(controller.RequestQuery[key] as any).optional
-				) {
-					res.status(400).json({
-						message: 'Missing required fields',
-					})
-
-					return
-				}
-				let tmp = controller.RequestQuery[key]
-				if (
-					!checkType(typeof tmp == 'string' ? tmp : tmp.type, req.query[key]) &&
-					!(tmp as any).optional
-				) {
-					res.status(400).json({
-						message: 'Missing required fields',
-					})
-					return
-				}
+			const [RequestQuery, error] = CheckRequestInput(
+				controller.RequestQuery,
+				req.query
+			)
+			if (error) {
+				res.status(error.status).send(error.message)
+			}
+			for (let key in RequestQuery) {
+				req.query[key] = String(RequestQuery[key])
 			}
 		}
 		next()
@@ -243,4 +220,115 @@ function checkType(type: RequestDataType, value: any) {
 	return typeof value == type
 }
 
-type RequestDataType = 'array' | 'number' | 'string' | 'object'
+type RequestDataType = 'array' | 'number' | 'string' | 'object' | 'boolean'
+
+function CheckRequestInput(
+	RequestBodyType: RequestInput,
+	body: {
+		[key: string]: any
+	}
+): [
+	(
+		| {
+				[key: string]: any
+		  }
+		| null
+		| undefined
+	),
+	(
+		| {
+				status: number
+				message: string
+		  }
+		| null
+		| undefined
+	)
+] {
+	const RequestBody: {
+		[key: string]: any
+	} = {}
+	for (const key in RequestBodyType) {
+		// if (!body[key] && !(RequestBodyType[key] as any).optional) {
+		// 	res.status(400).json({
+		// 		message: 'Missing required fields',
+		// 	})
+
+		// 	return
+		// }
+
+		// let tmp = RequestBodyType[key]
+		// if (
+		// 	!checkType(typeof tmp == 'string' ? tmp : tmp.type, body[key]) &&
+		// 	!(tmp as any).optional
+		// ) {
+		// 	res.status(400).json({
+		// 		message: 'Missing required fields',
+		// 	})
+		// 	return
+		// }
+		const ItemType = RequestBodyType[key]
+		if (
+			!body[key] &&
+			!(typeof ItemType == 'string' ? false : ItemType.optional)
+		) {
+			//TODO: return error
+
+			return [
+				null,
+				{
+					status: 400,
+					message: 'Missing required fields',
+				},
+			]
+		}
+
+		if (typeof ItemType == 'string') {
+			if (!checkType(ItemType, body[key])) {
+				//TODO: Return type error
+				return [
+					null,
+					{
+						status: 400,
+						message: 'Fields types error',
+					},
+				]
+			}
+		} else if (ItemType.type == 'array') {
+			if (!checkType(ItemType.type, body[key])) {
+				//TODO: return type error
+				return [
+					null,
+					{
+						status: 400,
+						message: 'Fields types error',
+					},
+				]
+			} else if (
+				!(body[key] as Array<any>).every((i) => {
+					if (i == null || (i == undefined && ItemType.optional)) {
+						return true
+					}
+					return typeof i == ItemType.childType
+				})
+			) {
+				//TODO: return array chill type error
+				return [
+					null,
+					{
+						status: 400,
+						message: 'Array child type error',
+					},
+				]
+			}
+		} else if (ItemType.type == 'object') {
+			const [data, error] = CheckRequestInput(ItemType.childType, body[key])
+			if (error) {
+				return [data, error]
+			}
+			body[key] = data
+		}
+
+		RequestBody[key] = body[key]
+	}
+	return [RequestBody, null]
+}

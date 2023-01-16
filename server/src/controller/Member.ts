@@ -5,6 +5,7 @@ import {GuildModel} from '../model/Guild'
 import {Response} from '../typings/ResponseInput'
 import {Controller, ControllerType} from '../helper/ControllerType'
 import {AuthMiddleware} from '../middleware/auth'
+import {RoleModel} from '../model/Role'
 
 export const JoinGuild: ControllerType<true> = async (
 	req: Request,
@@ -38,11 +39,19 @@ export const JoinGuild: ControllerType<true> = async (
 			})
 			return
 		}
-
+		const everyoneRole = await RoleModel.findById(guild.everyoneRole)
+		if (!everyoneRole) {
+			res.status(500).json({
+				message: 'Server Error',
+			})
+			return
+		}
 		member = await MemberUtil.CreateMember(guild._id, res.locals.userId, {
 			isOwner: false,
 		})
-
+		member.Role.push(everyoneRole?._id)
+		await member.save()
+		everyoneRole.member.push(member._id)
 		guild.members.push(member._id)
 		await guild.save()
 
@@ -170,25 +179,25 @@ export const RemoveMember: ControllerType<true> = async (
 			requested.userId,
 			requested.guildId
 		)
-		if (
-			!permissions.permissions.canKickMember() &&
-			!requested.isOwner &&
-			requested.userId !== guild.owner
-		) {
-			res.status(403).send({
-				message: 'Missing permissions',
-			})
-			return
-		}
-
 		let member = await MemberModel.findOne({
 			userId: userId,
 			guildId: guild._id,
 		})
-
 		if (!member) {
 			res.status(403).send({
 				message: "Can't find valid user with the provided ID in the guild",
+			})
+			return
+		}
+		if (requested.isOwner && guild.owner == requested.userId) {
+			res.status(403).send({
+				message: "Guild owner can't leave guild, transfer or delete it instead",
+			})
+			return
+		}
+		if (!permissions.permissions.canKickMember(member)) {
+			res.status(403).send({
+				message: 'Missing permissions',
 			})
 			return
 		}
@@ -224,7 +233,7 @@ export const RemoveMember: ControllerType<true> = async (
 		})
 	}
 }
-;(RemoveMember.ControllerName = 'remove'),
+;(RemoveMember.ControllerName = 'kick'),
 	(RemoveMember.RequestMethod = 'delete'),
 	(RemoveMember.RequestBody = {
 		userId: 'string',
@@ -232,10 +241,12 @@ export const RemoveMember: ControllerType<true> = async (
 	})
 
 export const GetMemberInfo: ControllerType = async (req, res) => {
-	return res.json(MemberModel.findOne({
-		guildId: req.params.guildId,
-		userId:req.params.userId
-	}))
+	return res.json(
+		MemberModel.findOne({
+			guildId: req.params.guildId,
+			userId: req.params.userId,
+		})
+	)
 }
 GetMemberInfo.ControllerName = 'info'
 GetMemberInfo.RequestMethod = 'get'
@@ -246,6 +257,6 @@ GetMemberInfo.RequestQuery = {
 GetMemberInfo.BlockOtherMiddleware = true
 
 export const MemberController = new Controller(
-	[JoinGuild, LeaveGuild, RemoveMember,GetMemberInfo],
+	[JoinGuild, LeaveGuild, RemoveMember, GetMemberInfo],
 	'/member'
 ).SetMiddleware([AuthMiddleware])

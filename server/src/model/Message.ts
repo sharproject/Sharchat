@@ -21,7 +21,7 @@ export class Message {
 	public Channel: string
 
 	@prop({required: false})
-	public threadId: string
+	public threadId?: string
 
 	@prop()
 	public memberId: string

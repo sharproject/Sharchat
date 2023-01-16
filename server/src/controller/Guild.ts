@@ -3,6 +3,8 @@ import {MemberModel} from '../model/Member'
 import {Controller, ControllerType} from '../helper/ControllerType'
 import {MemberUtil} from '../util/Member'
 import {AuthMiddleware} from '../middleware/auth'
+import {RoleModel} from '../model/Role'
+import {everyonePermissionDefault} from '../configuration/permissions'
 
 export const CreateGuild: ControllerType<true> = async (req, res) => {
 	const {name} = req.body
@@ -25,8 +27,20 @@ export const CreateGuild: ControllerType<true> = async (req, res) => {
 			isOwner: true,
 		})
 
+		const EveryOneRole = await new RoleModel({
+			RoleName: '@everyone',
+			guild: guild._id,
+			permissions: everyonePermissionDefault,
+			position: 1,
+		}).save()
+		guild.everyoneRole = EveryOneRole._id
+		guild.role.push(EveryOneRole._id)
+		member.Role.push(EveryOneRole._id)
 		guild.members.push(member._id)
+		EveryOneRole.member.push(member._id)
 
+		await member.save()
+		await EveryOneRole.save()
 		await guild.save()
 
 		res.status(201).json({
@@ -80,6 +94,7 @@ export const DeleteGuild: ControllerType<true> = async (req, res) => {
 			const members = await MemberModel.find({
 				guildId: guild._id,
 			})
+			//TODO: send event to client
 			members.map((d) => d.delete())
 		} catch (err) {
 			console.log(err)
@@ -178,6 +193,6 @@ GetGuild.RequestQuery = {
 }
 
 export const GuildController = new Controller(
-	[CreateGuild, DeleteGuild, EditGuild,GetGuild],
+	[CreateGuild, DeleteGuild, EditGuild, GetGuild],
 	'/guild'
 ).SetMiddleware([AuthMiddleware])
