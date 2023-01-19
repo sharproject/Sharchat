@@ -1,4 +1,4 @@
-import { Controller, Get, Post } from '@nestjs/common';
+import { Controller, Get, HttpException, Post } from '@nestjs/common';
 import { LoginUserInput, RegisterUserInput, UserService } from './user.service';
 import { Body, Param, Res } from '@nestjs/common/decorators';
 import { Request, Response } from 'express';
@@ -25,10 +25,12 @@ export class UserController {
                 (await this.userService.findUserByEmail(email)) ||
                 (await this.userService.findUserByUsername(username));
             if (alreadyUser) {
-                res.status(HttpStatus.BAD_REQUEST).json({
-                    message: 'Username or email is already taken',
-                });
-                return;
+                throw new HttpException(
+                    {
+                        message: 'Username or email is already taken',
+                    },
+                    HttpStatus.BAD_REQUEST,
+                );
             }
             const hashPassword = await bcrypt.hash(password, 10);
             const user = await this.userService.CreateNewUser({
@@ -36,17 +38,16 @@ export class UserController {
                 email,
                 password: hashPassword,
             });
-            res.status(HttpStatus.CREATED).json({
+            return {
                 message: 'User created successfully',
                 token: await this.AuthService.GenToken(user._id),
                 user,
-            });
-            return;
+            };
         } catch (error) {
-            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-                message: error.message,
-            });
-            return;
+            throw new HttpException(
+                'INTERNAL SERVER ERROR',
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
         }
     }
 
@@ -62,34 +63,38 @@ export class UserController {
                 (await this.userService.findUserByEmail(emailOrUsername)) ||
                 (await this.userService.findUserByUsername(emailOrUsername));
             if (!user) {
-                res.status(HttpStatus.BAD_REQUEST).json({
-                    message: 'User not found',
-                });
-                return;
+                throw new HttpException(
+                    {
+                        message: 'User not found',
+                    },
+                    HttpStatus.BAD_REQUEST,
+                );
             }
             const isMatch = await bcrypt.compare(password, user.password);
             if (!isMatch) {
-                res.status(HttpStatus.BAD_REQUEST).json({
-                    message: 'Password is incorrect',
-                });
-                return;
+                throw new HttpException(
+                    {
+                        message: 'Password is incorrect',
+                    },
+                    HttpStatus.BAD_REQUEST,
+                );
             }
-            res.status(200).json({
+            return {
                 message: 'Login successfully',
                 token: await this.AuthService.GenToken(user._id),
                 user,
-            });
-            return;
+            };
         } catch (error) {
-            res.status(500).json({
-                message: error.message,
-            });
-            return;
+            throw new HttpException(
+                'INTERNAL SERVER ERROR',
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
         }
     }
 
     @Get(':id')
-    findOne(@Param('id') id: string) {
-        return this.userService.findUserByID(id);
+    async findOne(@Param('id') id: string) {
+        return await this.userService.findUserByID(id);
     }
+    
 }

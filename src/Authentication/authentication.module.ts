@@ -5,26 +5,17 @@ import {
     NestModule,
     Provider,
 } from '@nestjs/common';
-import { AuthenticationService } from './authentication.service';
+import {
+    AuthenticationService,
+    AuthenticationServiceMiddleware,
+} from './authentication.service';
 import { AuthenticationMiddleware } from './authentication.middleware';
 import { SessionSchema, Session } from '../model/Session';
 import { MongooseModule } from '@nestjs/mongoose';
 
-export const AUTH_OPTIONS = 'AUTH_OPTIONS';
-export interface TAuthOptions {
-    isAuth: boolean;
-}
-
-const ModuleProvider = [AuthenticationService];
 @Module({
     controllers: [],
-    providers: [
-        {
-            provide: AUTH_OPTIONS,
-            useValue: { isAuth: true } as TAuthOptions,
-        },
-        ...ModuleProvider,
-    ],
+    providers: [AuthenticationService],
     imports: [
         MongooseModule.forFeature([
             {
@@ -44,10 +35,10 @@ const ModuleProvider = [AuthenticationService];
     ],
 })
 export class AuthenticationModule implements NestModule {
-    constructor(private AuthService: AuthenticationService) {}
+    constructor(private authService: AuthenticationService) {}
     configure(consumer: MiddlewareConsumer) {
-        if (this.AuthService.IsAuth()) {
-            let middleware = new AuthenticationMiddleware(this.AuthService);
+        if (this.authService.IsAuth()) {
+            let middleware = new AuthenticationMiddleware(this.authService);
             consumer.apply(middleware.use.bind(middleware)).forRoutes('*');
         }
     }
@@ -55,14 +46,7 @@ export class AuthenticationModule implements NestModule {
     static GetAuthMiddleware(...anotherProvider: Provider[]): DynamicModule {
         return {
             module: AuthenticationModule,
-            providers: [
-                {
-                    provide: AUTH_OPTIONS,
-                    useValue: { isAuth: true } as TAuthOptions,
-                },
-                ...ModuleProvider,
-                ...anotherProvider,
-            ],
+            providers: [AuthenticationServiceMiddleware, ...anotherProvider],
             exports: [
                 MongooseModule.forFeature([
                     {
@@ -86,14 +70,7 @@ export class AuthenticationModule implements NestModule {
     static GetAuthUtil(...anotherProvider: Provider[]): DynamicModule {
         return {
             module: AuthenticationModule,
-            providers: [
-                {
-                    provide: AUTH_OPTIONS,
-                    useValue: { isAuth: false } as TAuthOptions,
-                },
-                ...ModuleProvider,
-                ...anotherProvider,
-            ],
+            providers: [AuthenticationService, ...anotherProvider],
             exports: [
                 MongooseModule.forFeature([
                     {

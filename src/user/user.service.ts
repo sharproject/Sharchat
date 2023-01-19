@@ -2,16 +2,21 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from '../model/User';
 import { Model } from 'mongoose';
-import { Session, SessionDocument } from '../model/Session';
-import * as jsonwebtoken from 'jsonwebtoken';
-export interface RegisterUserInput {
+import { IsEmail, IsNotEmpty } from 'class-validator';
+export class RegisterUserInput {
+    @IsEmail()
     email: string;
+    @IsNotEmpty()
     password: string;
+    @IsNotEmpty()
+
     username: string;
 }
 
-export interface LoginUserInput {
+export class LoginUserInput {
+    @IsNotEmpty()
     emailOrUsername: string;
+    @IsNotEmpty()
     password: string;
 }
 

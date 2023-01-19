@@ -1,11 +1,9 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { SessionDocument } from '../model/Session';
 import * as jsonwebtoken from 'jsonwebtoken';
-import { UserService } from '../user/user.service';
 import { Session } from '../model/Session';
-import { AUTH_OPTIONS, TAuthOptions } from './authentication.module';
 interface JwtPayload {
     sessionId: string;
 }
@@ -13,7 +11,6 @@ interface JwtPayload {
 export class AuthenticationService {
     constructor(
         @InjectModel(Session.name) private SessionModel: Model<SessionDocument>,
-        @Inject(AUTH_OPTIONS) private options: TAuthOptions = { isAuth: false },
     ) {}
     async GenToken(userId: string) {
         const jwtSecret = process.env.JWT_SECRET;
@@ -49,6 +46,13 @@ export class AuthenticationService {
         return session.UserId;
     }
     IsAuth() {
-        return this.options.isAuth;
+        return false;
+    }
+}
+
+@Injectable()
+export class AuthenticationServiceMiddleware extends AuthenticationService { 
+    override IsAuth() {
+        return true
     }
 }
