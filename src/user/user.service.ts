@@ -1,0 +1,40 @@
+import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { User, UserDocument } from '../model/User';
+import { Model } from 'mongoose';
+import { Session, SessionDocument } from '../model/Session';
+import * as jsonwebtoken from 'jsonwebtoken';
+export interface RegisterUserInput {
+    email: string;
+    password: string;
+    username: string;
+}
+
+export interface LoginUserInput {
+    emailOrUsername: string;
+    password: string;
+}
+
+@Injectable()
+export class UserService {
+    constructor(
+        @InjectModel(User.name) private UserModel: Model<UserDocument>,
+    ) {}
+    async findUserByEmail(email: string) {
+        return await this.UserModel.findOne({ email: email });
+    }
+    async findUserByUsername(username: string) {
+        return await this.UserModel.findOne({ username: username });
+    }
+    async CreateNewUser({ email, password, username }: RegisterUserInput) {
+        return await new this.UserModel({
+            email,
+            password,
+            username,
+        }).save();
+    }
+
+    async findUserByID(id: string) {
+        return await this.UserModel.findById(id);
+    }
+}
