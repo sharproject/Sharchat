@@ -96,5 +96,4 @@ export class UserController {
     async findOne(@Param('id') id: string) {
         return await this.userService.findUserByID(id);
     }
-    
 }

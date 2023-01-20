@@ -4,6 +4,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from '@nestjs/config';
 import { join } from 'path';
 import { GuildModule } from './guild/guild.module';
+import { MemberModule } from './member/member.module';
+import { RoleModule } from './role/role.module';
 
 @Module({
     imports: [
@@ -11,9 +13,11 @@ import { GuildModule } from './guild/guild.module';
             envFilePath: join(__dirname, '..', '.env'),
             isGlobal: true,
         }),
-        UserModule,
         MongooseModule.forRoot(process.env.DB_URL || ''),
+        UserModule,
         GuildModule,
+        MemberModule,
+        RoleModule,
     ],
     controllers: [],
     providers: [],

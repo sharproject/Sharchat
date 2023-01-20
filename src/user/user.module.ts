@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { DynamicModule, Module } from '@nestjs/common';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -17,4 +17,23 @@ import { AuthenticationModule } from '../Authentication/authentication.module';
         UserService,
     ],
 })
-export class UserModule {}
+export class UserModule {
+    static GetUserModule(): DynamicModule {
+        return {
+            module: UserModule,
+            providers: [UserService],
+            imports: [
+                MongooseModule.forFeature([
+                    { name: User.name, schema: UserSchema },
+                ]),
+                AuthenticationModule.GetAuthUtil(),
+            ],
+            exports: [
+                MongooseModule.forFeature([
+                    { name: User.name, schema: UserSchema },
+                ]),
+                UserService,
+            ],
+        };
+    }
+}

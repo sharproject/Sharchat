@@ -45,14 +45,4 @@ export class AuthenticationService {
         }
         return session.UserId;
     }
-    IsAuth() {
-        return false;
-    }
-}
-
-@Injectable()
-export class AuthenticationServiceMiddleware extends AuthenticationService { 
-    override IsAuth() {
-        return true
-    }
 }

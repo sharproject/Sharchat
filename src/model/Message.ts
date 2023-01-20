@@ -45,4 +45,5 @@ export class Message {
 }
 
 export const MessageSchema = SchemaFactory.createForClass(Message);
+MessageSchema.plugin(require('mongoose-autopopulate'));
 export const MessageModel = mongoose.model(Message.name, MessageSchema);

@@ -62,4 +62,5 @@ export class Guild {
 }
 
 export const GuildSchema = SchemaFactory.createForClass(Guild);
+GuildSchema.plugin(require('mongoose-autopopulate'));
 export const GuildModel = mongoose.model(Guild.name, GuildSchema);

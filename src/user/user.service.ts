@@ -5,11 +5,11 @@ import { Model } from 'mongoose';
 import { IsEmail, IsNotEmpty } from 'class-validator';
 export class RegisterUserInput {
     @IsEmail()
+    @IsNotEmpty()
     email: string;
     @IsNotEmpty()
     password: string;
     @IsNotEmpty()
-
     username: string;
 }
 
@@ -41,5 +41,19 @@ export class UserService {
 
     async findUserByID(id: string) {
         return await this.UserModel.findById(id);
+    }
+    async addGuildForUser(userID: string, guildID: string) {
+        return await this.UserModel.findByIdAndUpdate(userID, {
+            $push: {
+                guilds: guildID,
+            },
+        });
+    }
+    async DeleteGuildForUser(userID: string, guildID: string) {
+        return await this.UserModel.findByIdAndUpdate(userID, {
+            $pull: {
+                guilds: guildID,
+            },
+        });
     }
 }

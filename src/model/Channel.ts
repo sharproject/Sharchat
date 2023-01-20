@@ -36,4 +36,5 @@ export class Channel {
 }
 
 export const ChannelSchema = SchemaFactory.createForClass(Channel);
+ChannelSchema.plugin(require('mongoose-autopopulate'));
 export const ChannelModel = mongoose.model(Channel.name, ChannelSchema);

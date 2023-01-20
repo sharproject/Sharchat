@@ -49,6 +49,7 @@ export class Role {
 }
 
 export const RoleSchema = SchemaFactory.createForClass(Role);
+RoleSchema.plugin(require('mongoose-autopopulate'));
 export const RoleModel = mongoose.model(Role.name, RoleSchema);
 
 export interface PermissionType {

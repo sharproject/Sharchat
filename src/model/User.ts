@@ -35,4 +35,5 @@ export class User {
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
+UserSchema.plugin(require('mongoose-autopopulate'));
 export const UserModel = mongoose.model(User.name, UserSchema);

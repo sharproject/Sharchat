@@ -24,4 +24,5 @@ export class Session {
 }
 
 export const SessionSchema = SchemaFactory.createForClass(Session);
+SessionSchema.plugin(require('mongoose-autopopulate'));
 export const SessionModel = mongoose.model(Session.name, SessionSchema);
