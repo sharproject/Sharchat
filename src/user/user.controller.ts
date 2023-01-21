@@ -1,7 +1,7 @@
 import { Controller, Get, HttpException, Post } from '@nestjs/common';
 import { LoginUserInput, RegisterUserInput, UserService } from './user.service';
 import { Body, Param, Res } from '@nestjs/common/decorators';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { HttpStatus } from '@nestjs/common/enums';
 import * as bcrypt from 'bcrypt';
 import { AuthenticationService } from '../Authentication/authentication.service';
@@ -92,7 +92,7 @@ export class UserController {
         }
     }
 
-    @Get(':id')
+    @Get('profile/:id')
     async findOne(@Param('id') id: string) {
         return await this.userService.findUserByID(id);
     }
