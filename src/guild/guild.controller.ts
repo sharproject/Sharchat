@@ -74,7 +74,8 @@ export class GuildController {
             await EveryOneRole.save();
             await guild.save();
 
-            res.status(201).json({
+            res.status(201);
+            return ({
                 message: 'Guild created',
                 guild,
                 member,
@@ -94,9 +95,9 @@ export class GuildController {
         try {
             const guild = await this.guildService.findGuildById(id);
             if (!guild) {
-                res.status(400).json({
+                throw new HttpException({
                     message: 'Guild not found',
-                });
+                },HttpStatus.BAD_REQUEST);
                 return;
             }
             const result =
@@ -105,9 +106,12 @@ export class GuildController {
                     guild._id,
                 );
             if (!result.isOwner) {
-                res.status(403).json({
-                    message: 'Requested user is not the guild owner',
-                });
+                throw new HttpException(
+                    {
+                        message: 'Requested user is not the guild owner',
+                    }
+                    ,HttpStatus.FORBIDDEN
+                )
                 return;
             }
 
@@ -131,10 +135,11 @@ export class GuildController {
             );
             await guild.delete();
 
-            res.status(200).json({
+            res.status(200)
+            return {
                 message: 'Guild deleted',
                 guild,
-            });
+            };
         } catch (error) {
             console.log(error);
             res.status(500).json({
