@@ -82,9 +82,10 @@ export class GuildController {
             });
         } catch (error) {
             console.log(error);
-            res.status(500).json({
-                message: 'Error creating guild',
-            });
+            throw new HttpException(
+                'INTERNAL SERVER ERROR',
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
         }
     }
 
@@ -142,9 +143,10 @@ export class GuildController {
             };
         } catch (error) {
             console.log(error);
-            res.status(500).json({
-                message: 'Error deleting guild',
-            });
+            throw new HttpException(
+                'INTERNAL SERVER ERROR',
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
         }
     }
 }
