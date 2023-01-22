@@ -7,6 +7,7 @@ import { Guild, GuildDocument } from '../model/Guild';
 import permissions from 'src/configuration/permissions';
 import { RoleDocument } from 'src/model/Role';
 import { RoleService } from 'src/role/role.service';
+import mongoose from 'mongoose';
 
 export interface CreateMemberOption {
     isOwner: boolean;
@@ -39,19 +40,24 @@ export class MemberService {
         if (!guild) {
             throw new Error('Guild not found');
         }
-        const member = new this.MemberModel({
+        const member = await new this.MemberModel({
             user: user,
             guild: guild,
-            Role: [],
+            Role: [guild.everyoneRole._id],
             ...options,
-        });
-        user.update({
-            $push: {
-                guilds: guildId,
-            },
-        });
+        }).save();
+        user.guilds.push(guild);
+        const everyoneRole = await this.roleService.findRoleById(
+            guild.everyoneRole._id,
+        );
         await member.save();
-        return member;
+        everyoneRole?.member.push(member);
+        guild.members.push(member);
+        await everyoneRole?.save();
+        await guild.save();
+        await member.save();
+        await user.save();
+        return this.findMemberById(member._id);
     }
     async findMemberById(id: string) {
         return await this.MemberModel.findById(id);
@@ -108,6 +114,64 @@ export class MemberService {
         };
         console.log({ result });
         return result;
+    }
+    async findGuildById(id: string) {
+        return await this.guildModel.findById(id);
+    }
+    async findMemberByUserIdAndGuildId(userId: string, guildId: string) {
+        return await this.MemberModel.findOne({
+            user: userId,
+            guild: guildId,
+        });
+    }
+    async findRoleById(id: string) {
+        return this.roleService.findRoleById(id);
+    }
+    async MemberUtilDeleteMember(
+        guildId: string | undefined,
+        userId: string | undefined,
+        onlyMember: boolean = false,
+    ) {
+        if (!userId) {
+            throw new Error('Guild ID/User ID is not provided');
+        }
+        const user = await this.userService.findUserByID(userId);
+        if (!user) {
+            throw new Error('User not found');
+        }
+        const member = await this.MemberModel.findOne({
+            userId: user._id,
+            guildId: guildId,
+        });
+        if (!member) {
+            throw new Error('Member not found');
+        }
+        if (!onlyMember) {
+            await this.guildModel.findByIdAndUpdate(guildId, {
+                $pull: {
+                    members: member._id,
+                },
+            });
+            for (let role of member.Role) {
+                await this.roleService
+                    .GetRoleModel()
+                    .findByIdAndUpdate(role._id, {
+                        $pull: {
+                            member: member._id,
+                        },
+                    });
+            }
+        }
+
+        await user.updateOne({
+            $pull: {
+                guilds: new mongoose.Types.ObjectId(guildId),
+            },
+        });
+
+        await member.delete();
+
+        return member;
     }
 }
 

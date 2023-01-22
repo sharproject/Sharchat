@@ -20,10 +20,11 @@ export class GuildService {
         { name, description }: CreateGuildInput,
         owner: string,
     ) {
+        let ownerObj = await this.userService.findUserByID(owner);
         return await new this.GuildModel({
             name,
             description,
-            owner,
+            owner: ownerObj,
         }).save();
     }
     async CreateGuild<T>(input: T) {
@@ -51,11 +52,5 @@ export class GuildService {
             permissions: everyonePermissionDefault,
             position: 1,
         });
-    }
-    async OnlyThisModule_UpdateUserJoinAndCreateGuild(
-        guildID: string,
-        userID: string,
-    ) {
-        return await this.userService.addGuildForUser(userID, guildID);
     }
 }

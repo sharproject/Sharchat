@@ -14,6 +14,7 @@ import { Guild, GuildSchema } from 'src/model/Guild';
 import { MemberModule } from '../member/member.module';
 import { RoleModule } from '../role/role.module';
 import { UserModule } from 'src/user/user.module';
+import { GuildNotAuthController } from './guild.not_auth.controller';
 
 @Module({
     imports: [
@@ -30,7 +31,7 @@ import { UserModule } from 'src/user/user.module';
     ],
     exports: [GuildService],
     providers: [GuildService],
-    controllers: [GuildController],
+    controllers: [GuildController, GuildNotAuthController],
 })
 export class GuildModule implements NestModule {
     constructor(private readonly authService: AuthenticationService) {}

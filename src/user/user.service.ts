@@ -3,6 +3,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from '../model/User';
 import { Model } from 'mongoose';
 import { IsEmail, IsNotEmpty } from 'class-validator';
+import { GuildDocument } from 'src/model/Guild';
+import mongoose from 'mongoose';
 export class RegisterUserInput {
     @IsEmail()
     @IsNotEmpty()
@@ -42,17 +44,10 @@ export class UserService {
     async findUserByID(id: string) {
         return await this.UserModel.findById(id);
     }
-    async addGuildForUser(userID: string, guildID: string) {
-        return await this.UserModel.findByIdAndUpdate(userID, {
-            $push: {
-                guilds: guildID,
-            },
-        });
-    }
-    async DeleteGuildForUser(userID: string, guildID: string) {
+    async DeleteGuildForUser(userID: string, guildId: string) {
         return await this.UserModel.findByIdAndUpdate(userID, {
             $pull: {
-                guilds: guildID,
+                guilds: new mongoose.Types.ObjectId(guildId),
             },
         });
     }

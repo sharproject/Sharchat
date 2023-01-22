@@ -7,6 +7,7 @@ import {
     Delete,
     HttpException,
     HttpStatus,
+    Patch,
     Post,
     Res,
 } from '@nestjs/common';
@@ -23,11 +24,27 @@ export class DeleteGuildInput {
     @IsNotEmpty()
     id: string;
 }
+
+export class EditGuildInput {
+    @IsNotEmpty()
+    id: string;
+
+    @IsOptional()
+    @IsNotEmpty()
+    name?: string;
+
+    @IsOptional()
+    description?: string;
+}
+
 @Controller('guild')
 export class GuildController {
     constructor(private readonly guildService: GuildService) {}
     @Post('/create')
-    async CreateGuild(@Body() input: CreateGuildInput, @Res() res: Response) {
+    async CreateGuild(
+        @Body() input: CreateGuildInput,
+        @Res({ passthrough: true }) res: Response,
+    ) {
         const { name } = input;
         if (!name) {
             throw new HttpException(
@@ -47,7 +64,13 @@ export class GuildController {
                 },
                 res.locals.userId,
             );
-
+            const EveryOneRole =
+                await this.guildService.OnlyThisModule_CreateDefaultRoleForGuild(
+                    guild._id,
+                );
+            guild.everyoneRole = EveryOneRole;
+            guild.role.push(EveryOneRole);
+            await guild.save();
             const member = await this.guildService.OnlyThisModule_CreateMember(
                 guild._id,
                 res.locals.userId,
@@ -55,29 +78,11 @@ export class GuildController {
                     isOwner: true,
                 },
             );
-
-            const EveryOneRole =
-                await this.guildService.OnlyThisModule_CreateDefaultRoleForGuild(
-                    guild._id,
-                );
-            guild.everyoneRole = EveryOneRole;
-            guild.role.push(EveryOneRole);
-            member.Role.push(EveryOneRole);
-            guild.members.push(member);
-            EveryOneRole.member.push(member);
-            await this.guildService.OnlyThisModule_UpdateUserJoinAndCreateGuild(
-                guild._id,
-                member.user._id,
-            );
-
-            await member.save();
-            await EveryOneRole.save();
-            await guild.save();
-
+            console.log('siuuuu');
             res.status(201);
             return {
                 message: 'Guild created',
-                guild,
+                guild: await guild.save(),
                 member,
             };
         } catch (error) {
@@ -90,7 +95,10 @@ export class GuildController {
     }
 
     @Delete('delete')
-    async DeleteGuild(@Body() input: DeleteGuildInput, @Res() res: Response) {
+    async DeleteGuild(
+        @Body() input: DeleteGuildInput,
+        @Res({ passthrough: true }) res: Response,
+    ) {
         const { id } = input;
 
         try {
@@ -102,7 +110,6 @@ export class GuildController {
                     },
                     HttpStatus.BAD_REQUEST,
                 );
-                return;
             }
             const result =
                 await this.guildService.memberService.MemberUtilCheckPermission(
@@ -116,23 +123,29 @@ export class GuildController {
                     },
                     HttpStatus.FORBIDDEN,
                 );
-                return;
+            }
+
+            try {
+                for (let member of guild.members) {
+                    this.guildService.memberService.MemberUtilDeleteMember(
+                        member.guild._id,
+                        member.user._id,
+                        true,
+                    );
+                }
+            } catch (err) {
+                console.log(err);
             }
 
             try {
                 (
-                    await this.guildService.memberService.findMemberInGuild(
+                    await this.guildService.roleService.findRoleInGuild(
                         guild._id,
                     )
                 ).map((d) => d.delete());
             } catch (err) {
                 console.log(err);
             }
-
-            (
-                await this.guildService.roleService.findRoleInGuild(guild._id)
-            ).map((d) => d.delete());
-
             await this.guildService.userService.DeleteGuildForUser(
                 res.locals.userId,
                 guild._id,
@@ -148,6 +161,68 @@ export class GuildController {
             console.log(error);
             throw new HttpException(
                 'INTERNAL SERVER ERROR',
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
+    }
+    @Patch('/edit')
+    async EditGuild(@Body() input: EditGuildInput, @Res() res: Response) {
+        const { id, name, description } = input;
+        if (!id) {
+            throw new HttpException(
+                {
+                    message: 'Missing required fields',
+                },
+                HttpStatus.BAD_REQUEST,
+            );
+        }
+
+        try {
+            const guild = await this.guildService.findGuildById(id);
+            if (!guild) {
+                throw new HttpException(
+                    {
+                        message: 'Guild not found',
+                    },
+                    HttpStatus.NOT_FOUND,
+                );
+            }
+            const result =
+                await this.guildService.memberService.MemberUtilCheckPermission(
+                    res.locals.userId,
+                    guild._id,
+                );
+            if (!result.permissions.canEditGuild()) {
+                throw new HttpException(
+                    {
+                        message:
+                            "Requested member doesn't have permission to edit",
+                    },
+                    HttpStatus.FORBIDDEN,
+                );
+            }
+
+            if (
+                (name && typeof name == 'string') ||
+                (description && typeof description == 'string')
+            ) {
+                if (name && typeof name == 'string') guild.name = name;
+                if (description && typeof description == 'string')
+                    guild.description = description;
+
+                await guild.save();
+            }
+
+            return {
+                message: 'Guild edited',
+                guild,
+            };
+        } catch (error) {
+            console.log(error);
+            throw new HttpException(
+                {
+                    message: 'Internal Server Error',
+                },
                 HttpStatus.INTERNAL_SERVER_ERROR,
             );
         }

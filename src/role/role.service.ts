@@ -24,4 +24,7 @@ export class RoleService {
     GetRoleModel() {
         return this.RoleModel;
     }
+    async findRoleById(id: string) {
+        return await this.RoleModel.findById(id);
+    }
 }
