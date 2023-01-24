@@ -2,25 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from '../model/User';
 import { Model } from 'mongoose';
-import { IsEmail, IsNotEmpty } from 'class-validator';
-import { GuildDocument } from 'src/model/Guild';
 import mongoose from 'mongoose';
-export class RegisterUserInput {
-    @IsEmail()
-    @IsNotEmpty()
-    email: string;
-    @IsNotEmpty()
-    password: string;
-    @IsNotEmpty()
-    username: string;
-}
+import { RegisterUserInput } from '../typings';
 
-export class LoginUserInput {
-    @IsNotEmpty()
-    emailOrUsername: string;
-    @IsNotEmpty()
-    password: string;
-}
 
 @Injectable()
 export class UserService {

@@ -10,6 +10,7 @@ import {
 import { IsNotEmpty } from 'class-validator';
 import { Response } from 'express';
 import { MemberService } from './member.service';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 export class JoinGuildInput {
     @IsNotEmpty()
@@ -20,6 +21,7 @@ export class LeaveGuildInput {
     id: string;
 }
 
+@ApiBearerAuth()
 @Controller('member')
 export class MemberController {
     constructor(private readonly memberService: MemberService) {}

@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 import { Guild } from './Guild';
+import { ApiProperty } from '@nestjs/swagger';
 
 export type UserDocument = HydratedDocument<User>;
 
@@ -8,24 +9,48 @@ export type UserDocument = HydratedDocument<User>;
     timestamps: true,
 })
 export class User {
-    constructor() {}
+    constructor() { }
+    @ApiProperty({
+        description:"Username"
+    })
     @Prop({ isRequired: true })
     public username: string;
 
+    @ApiProperty({
+        description:"Raw User password =))"
+    })
     @Prop({ isRequired: true })
     public password: string;
 
+    @ApiProperty({
+        description:"User email"
+    })
     @Prop({ isRequired: true })
     public email: string;
 
     public _id: string;
 
+    @ApiProperty(
+        {
+            description:"User create at"
+        }
+    )
     @Prop({ isRequired: true, default: Date.now() })
     public createdAt: Date;
 
+    @ApiProperty(
+        {
+            description:"User update at"
+        }
+    )
     @Prop({ isRequired: true, default: Date.now() })
     public updatedAt: Date;
 
+    @ApiProperty(
+        {
+            description:"User guild list"
+        }
+    )
     @Prop({
         isRequired: true,
         default: [],

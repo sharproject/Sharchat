@@ -1,11 +1,18 @@
 import { Controller, Get, HttpException, Post } from '@nestjs/common';
-import { LoginUserInput, RegisterUserInput, UserService } from './user.service';
+import { UserService } from './user.service';
 import { Body, Param, Res } from '@nestjs/common/decorators';
-import { Response } from 'express';
 import { HttpStatus } from '@nestjs/common/enums';
 import * as bcrypt from 'bcrypt';
 import { AuthenticationService } from '../Authentication/authentication.service';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+    LoginUserInput,
+    UserLoginRegisterControllerReturn,
+    RegisterUserInput,
+    UserInfoControllerReturn,
+} from '../typings';
 
+@ApiTags("user")
 @Controller('user')
 export class UserController {
     constructor(
@@ -13,11 +20,16 @@ export class UserController {
         private readonly AuthService: AuthenticationService,
     ) {}
 
+    @ApiOperation({ summary: 'Register new user' })
+    @ApiResponse({
+        status: 200,
+        description: 'Create new user success',
+        type: UserLoginRegisterControllerReturn,
+    })
     @Post('register')
     async RegisterUser(
         @Body() registerData: RegisterUserInput,
-        @Res({ passthrough: true }) res: Response,
-    ) {
+    ): Promise<UserLoginRegisterControllerReturn> {
         const { email, password, username } = registerData;
 
         try {
@@ -51,11 +63,16 @@ export class UserController {
         }
     }
 
+    @ApiOperation({ summary: 'User login' })
+    @ApiResponse({
+        status: 200,
+        description: 'User login Success',
+        type: UserLoginRegisterControllerReturn,
+    })
     @Post('login')
     async UserLogin(
         @Body() input: LoginUserInput,
-        @Res({ passthrough: true }) res: Response,
-    ) {
+    ): Promise<UserLoginRegisterControllerReturn> {
         const { emailOrUsername, password } = input;
 
         try {
@@ -91,9 +108,27 @@ export class UserController {
             );
         }
     }
-
+    
+    @ApiOperation({
+        summary:"Get User Info by id"
+    })
+    @ApiResponse({
+        status:200,
+        description:"get user info success",
+        type:UserInfoControllerReturn
+    })
     @Get('profile/:id')
-    async findOne(@Param('id') id: string) {
-        return await this.userService.findUserByID(id);
+    async findOne(@Param('id') id: string):Promise<UserInfoControllerReturn> {
+        const userInfo = await this.userService.findUserByID(id)
+        if (!userInfo){
+          throw new HttpException({
+            message:"User not found"
+          }, HttpStatus.BAD_REQUEST)
+        }
+        userInfo.email = ""
+        return {
+            user: userInfo,
+            message:"Get user info success"
+        };
     }
 }

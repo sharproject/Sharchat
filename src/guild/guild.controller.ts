@@ -11,6 +11,7 @@ import {
     Post,
     Res,
 } from '@nestjs/common';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 export class CreateGuildInput {
     @IsNotEmpty()
@@ -37,6 +38,7 @@ export class EditGuildInput {
     description?: string;
 }
 
+@ApiBearerAuth()
 @Controller('guild')
 export class GuildController {
     constructor(private readonly guildService: GuildService) {}
