@@ -1,10 +1,14 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty } from '@nestjs/swagger';
 
-export class BaseController {
-    @ApiProperty({
-        description:"Controller Message"
-    })
-    message: string;
+export class BaseControllerResponse {
+	@ApiProperty({
+		description: 'Controller Message',
+	})
+	message: string;
 }
 
-export * from "./User"
+export * from './User';
+export * from './Error';
+export * from './Guild';
+export * from './Role';
+export * from './Member';

@@ -7,29 +7,31 @@ import {
     Post,
     Res,
 } from '@nestjs/common';
-import { IsNotEmpty } from 'class-validator';
 import { Response } from 'express';
 import { MemberService } from './member.service';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+    JoinGuildInput,
+    JoinGuildResponse,
+    LeaveGuildInput,
+    LeaveGuildResponse,
+} from '../typings';
+import { AuthTag } from '../constant';
 
-export class JoinGuildInput {
-    @IsNotEmpty()
-    id: string;
-}
-export class LeaveGuildInput {
-    @IsNotEmpty()
-    id: string;
-}
-
+@ApiTags('member', AuthTag)
 @ApiBearerAuth()
 @Controller('member')
 export class MemberController {
     constructor(private readonly memberService: MemberService) {}
+    @ApiResponse({
+        status: HttpStatus.OK,
+        type: JoinGuildResponse,
+    })
     @Post('/join')
     async JoinGuild(
         @Body() input: JoinGuildInput,
         @Res({ passthrough: true }) res: Response,
-    ) {
+    ): Promise<JoinGuildResponse> {
         const { id } = input;
         if (!id) {
             throw new HttpException(
@@ -60,6 +62,8 @@ export class MemberController {
                 return {
                     message: 'Requested user already joined the guild',
                     Joined: true,
+                    guild,
+                    member,
                 };
             }
             const everyoneRole = await this.memberService.findRoleById(
@@ -83,6 +87,7 @@ export class MemberController {
 
             return {
                 message: 'Joined guild',
+                Joined: false,
                 guild,
                 member,
             };
@@ -96,11 +101,16 @@ export class MemberController {
             );
         }
     }
+
+    @ApiResponse({
+        status: HttpStatus.OK,
+        type: LeaveGuildResponse,
+    })
     @Delete('/leave')
-    async LeavServer(
+    async LeaveServer(
         @Body() input: LeaveGuildInput,
         @Res({ passthrough: true }) res: Response,
-    ) {
+    ): Promise<LeaveGuildResponse> {
         const id = input.id;
         if (!id) {
             throw new HttpException(
@@ -128,9 +138,12 @@ export class MemberController {
             );
 
             if (!member) {
-                return {
-                    message: "Requested user isn't in the guild",
-                };
+                throw new HttpException(
+                    {
+                        message: "Requested user isn't in the guild",
+                    },
+                    HttpStatus.FORBIDDEN,
+                );
             }
 
             if (member.user._id == guild.owner._id) {

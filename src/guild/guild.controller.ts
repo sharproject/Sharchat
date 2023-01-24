@@ -11,42 +11,32 @@ import {
     Post,
     Res,
 } from '@nestjs/common';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+    CreateGuildInput,
+    CreateGuildResponse,
+    DeleteGuildInput,
+    DeleteGuildResponse,
+    EditGuildInput,
+    EditGuildResponse,
+} from '../typings/Guild';
+import { AuthTag } from '../constant';
 
-export class CreateGuildInput {
-    @IsNotEmpty()
-    name: string;
-
-    @IsOptional()
-    description?: string;
-}
-
-export class DeleteGuildInput {
-    @IsNotEmpty()
-    id: string;
-}
-
-export class EditGuildInput {
-    @IsNotEmpty()
-    id: string;
-
-    @IsOptional()
-    @IsNotEmpty()
-    name?: string;
-
-    @IsOptional()
-    description?: string;
-}
-
+@ApiTags('guild', AuthTag)
 @ApiBearerAuth()
 @Controller('guild')
 export class GuildController {
     constructor(private readonly guildService: GuildService) {}
+
+    @ApiResponse({
+        status: HttpStatus.CREATED,
+        type: CreateGuildResponse,
+    })
     @Post('/create')
     async CreateGuild(
         @Body() input: CreateGuildInput,
         @Res({ passthrough: true }) res: Response,
-    ) {
+    ): Promise<CreateGuildResponse> {
         const { name } = input;
         if (!name) {
             throw new HttpException(
@@ -66,10 +56,9 @@ export class GuildController {
                 },
                 res.locals.userId,
             );
-            const EveryOneRole =
-                await this.guildService.OnlyThisModule_CreateDefaultRoleForGuild(
-                    guild._id,
-                );
+            const EveryOneRole = await this.guildService.OnlyThisModule_CreateDefaultRoleForGuild(
+                guild._id,
+            );
             guild.everyoneRole = EveryOneRole;
             guild.role.push(EveryOneRole);
             await guild.save();
@@ -80,8 +69,7 @@ export class GuildController {
                     isOwner: true,
                 },
             );
-            console.log('siuuuu');
-            res.status(201);
+            res.status(HttpStatus.CREATED);
             return {
                 message: 'Guild created',
                 guild: await guild.save(),
@@ -96,11 +84,15 @@ export class GuildController {
         }
     }
 
+    @ApiResponse({
+        status: HttpStatus.OK,
+        type: DeleteGuildResponse,
+    })
     @Delete('delete')
     async DeleteGuild(
         @Body() input: DeleteGuildInput,
         @Res({ passthrough: true }) res: Response,
-    ) {
+    ): Promise<DeleteGuildResponse> {
         const { id } = input;
 
         try {
@@ -113,11 +105,10 @@ export class GuildController {
                     HttpStatus.BAD_REQUEST,
                 );
             }
-            const result =
-                await this.guildService.memberService.MemberUtilCheckPermission(
-                    res.locals.userId,
-                    guild._id,
-                );
+            const result = await this.guildService.memberService.MemberUtilCheckPermission(
+                res.locals.userId,
+                guild._id,
+            );
             if (!result.isOwner) {
                 throw new HttpException(
                     {
@@ -128,7 +119,7 @@ export class GuildController {
             }
 
             try {
-                for (let member of guild.members) {
+                for (const member of guild.members) {
                     this.guildService.memberService.MemberUtilDeleteMember(
                         member.guild._id,
                         member.user._id,
@@ -153,8 +144,6 @@ export class GuildController {
                 guild._id,
             );
             await guild.delete();
-
-            res.status(200);
             return {
                 message: 'Guild deleted',
                 guild,
@@ -167,8 +156,16 @@ export class GuildController {
             );
         }
     }
+
+    @ApiResponse({
+        status: HttpStatus.OK,
+        type: EditGuildResponse,
+    })
     @Patch('/edit')
-    async EditGuild(@Body() input: EditGuildInput, @Res() res: Response) {
+    async EditGuild(
+        @Body() input: EditGuildInput,
+        @Res() res: Response,
+    ): Promise<EditGuildResponse> {
         const { id, name, description } = input;
         if (!id) {
             throw new HttpException(
@@ -189,11 +186,10 @@ export class GuildController {
                     HttpStatus.NOT_FOUND,
                 );
             }
-            const result =
-                await this.guildService.memberService.MemberUtilCheckPermission(
-                    res.locals.userId,
-                    guild._id,
-                );
+            const result = await this.guildService.memberService.MemberUtilCheckPermission(
+                res.locals.userId,
+                guild._id,
+            );
             if (!result.permissions.canEditGuild()) {
                 throw new HttpException(
                     {

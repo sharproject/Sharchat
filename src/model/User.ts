@@ -9,48 +9,42 @@ export type UserDocument = HydratedDocument<User>;
     timestamps: true,
 })
 export class User {
-    constructor() { }
+    constructor() {}
     @ApiProperty({
-        description:"Username"
+        description: 'Username',
     })
     @Prop({ isRequired: true })
     public username: string;
 
     @ApiProperty({
-        description:"Raw User password =))"
+        description: 'Raw User password =))',
     })
     @Prop({ isRequired: true })
     public password: string;
 
     @ApiProperty({
-        description:"User email"
+        description: 'User email',
     })
     @Prop({ isRequired: true })
     public email: string;
 
     public _id: string;
 
-    @ApiProperty(
-        {
-            description:"User create at"
-        }
-    )
+    @ApiProperty({
+        type: () => Date,
+    })
     @Prop({ isRequired: true, default: Date.now() })
     public createdAt: Date;
 
-    @ApiProperty(
-        {
-            description:"User update at"
-        }
-    )
+    @ApiProperty({
+        type: () => Date,
+    })
     @Prop({ isRequired: true, default: Date.now() })
     public updatedAt: Date;
 
-    @ApiProperty(
-        {
-            description:"User guild list"
-        }
-    )
+    @ApiProperty({
+        description: 'User guild list',
+    })
     @Prop({
         isRequired: true,
         default: [],
@@ -61,4 +55,3 @@ export class User {
 
 export const UserSchema = SchemaFactory.createForClass(User);
 UserSchema.plugin(require('mongoose-autopopulate'));
-export const UserModel = mongoose.model(User.name, UserSchema);

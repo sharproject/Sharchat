@@ -3,6 +3,7 @@ import mongoose, { HydratedDocument } from 'mongoose';
 import permissions from '../configuration/permissions';
 import { Guild } from './Guild';
 import { Member } from './Member';
+import { ApiProperty } from '@nestjs/swagger';
 
 export type RoleDocument = HydratedDocument<Role>;
 @Schema({
@@ -10,17 +11,29 @@ export type RoleDocument = HydratedDocument<Role>;
 })
 export class Role {
     constructor() {}
+
+    @ApiProperty()
     @Prop({ isRequired: true, type: String })
     public RoleName: string;
 
+    @ApiProperty()
     public _id: string;
 
+    @ApiProperty({
+        type: () => Date,
+    })
     @Prop({ isRequired: true, default: Date.now() })
     public createdAt: Date;
 
+    @ApiProperty({
+        type: () => Date,
+    })
     @Prop({ isRequired: true, default: Date.now() })
     public updatedAt: Date;
 
+    @ApiProperty({
+        type: () => Guild,
+    })
     @Prop({
         isRequired: true,
         type: mongoose.Types.ObjectId,
@@ -28,35 +41,50 @@ export class Role {
     })
     public guild: Guild;
 
+    @ApiProperty({
+        type: () => [PermissionClass],
+    })
     @Prop({
         isRequired: true,
         default: [],
     })
     public permissions: Array<PermissionType>;
 
+    @ApiProperty()
     @Prop({ isRequired: true, default: false })
     public hide: boolean;
 
+    @ApiProperty()
     @Prop({ isRequired: true, default: 1 })
     public position: number;
 
+    @ApiProperty({
+        type: () => [Member],
+    })
     @Prop({
         isRequired: true,
         default: [],
         type: [{ type: mongoose.Types.ObjectId, ref: 'Member' }],
     })
     member: Member[];
+
+    @ApiProperty()
+    @Prop({ isRequired: true, default: '#fffff' })
+    public color: string;
+
+    @ApiProperty()
+    @Prop({ isRequired: true, default: false })
+    public hideInNav: boolean;
 }
 
 export const RoleSchema = SchemaFactory.createForClass(Role);
 RoleSchema.plugin(require('mongoose-autopopulate'));
-export const RoleModel = mongoose.model(Role.name, RoleSchema);
 
 export interface PermissionType {
     name: keyof typeof permissions;
     metadata?: Metadata;
 }
-let PermissionClass = class implements PermissionType {
+const PermissionClass = class implements PermissionType {
     name: keyof typeof permissions;
     metadata?: Metadata | undefined;
 };

@@ -3,6 +3,7 @@ import mongoose, { HydratedDocument } from 'mongoose';
 import { Role } from './Role';
 import { Guild } from './Guild';
 import { User } from './User';
+import { ApiProperty } from '@nestjs/swagger';
 
 export type MemberDocument = HydratedDocument<Member>;
 @Schema({
@@ -12,12 +13,21 @@ export class Member {
     constructor() {}
     public _id: string;
 
+    @ApiProperty({
+        type: () => Date,
+    })
     @Prop({ isRequired: true, default: Date.now(), type: Date })
     public joinedAt: Date;
 
+    @ApiProperty({
+        type: () => Date,
+    })
     @Prop({ isRequired: true, default: Date.now(), type: Date })
     public updatedAt: Date;
 
+    @ApiProperty({
+        type: () => User,
+    })
     @Prop({
         isRequired: true,
         type: mongoose.Types.ObjectId,
@@ -25,6 +35,9 @@ export class Member {
     })
     public user: User;
 
+    @ApiProperty({
+        type: () => Guild,
+    })
     @Prop({
         isRequired: true,
         type: mongoose.Types.ObjectId,
@@ -32,6 +45,9 @@ export class Member {
     })
     public guild: Guild;
 
+    @ApiProperty({
+        type: () => [Role],
+    })
     @Prop({
         isRequired: true,
         default: [],
@@ -39,10 +55,10 @@ export class Member {
     })
     public Role: Array<Role>;
 
+    @ApiProperty()
     @Prop({ default: false, isRequired: true })
     public isOwner: boolean;
 }
 
 export const MemberSchema = SchemaFactory.createForClass(Member);
 MemberSchema.plugin(require('mongoose-autopopulate'));
-export const MemberModel = mongoose.model(Member.name, MemberSchema);
