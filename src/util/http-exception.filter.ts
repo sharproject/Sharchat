@@ -22,6 +22,6 @@ export class HttpExceptionFilter implements ExceptionFilter {
 		if (!Object.keys(responseData).some((k) => k == 'statusCode')) {
 			responseData['statusCode'] = status;
 		}
-		response.status(status).json();
+		response.status(status).json(responseData);
 	}
 }

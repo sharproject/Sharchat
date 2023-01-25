@@ -17,7 +17,7 @@ export class LeaveGuildInput {
 
 export class JoinGuildResponse extends BaseControllerResponse {
     @ApiProperty({
-        description: 'user was join guild before',
+        description: 'user was join guild before (true if user join and then leave)',
     })
     Joined: boolean;
     @ApiProperty()

@@ -33,7 +33,6 @@ export class UserController {
 	): Promise<UserLoginRegisterControllerReturn> {
 		const { email, password, username } = registerData;
 
-		try {
 			const alreadyUser =
 				(await this.userService.findUserByEmail(email)) ||
 				(await this.userService.findUserByUsername(username));
@@ -56,13 +55,7 @@ export class UserController {
 				token: await this.AuthService.GenToken(user._id),
 				user,
 			};
-		} catch (error) {
-			console.log(error);
-			throw new HttpException(
-				'INTERNAL SERVER ERROR',
-				HttpStatus.INTERNAL_SERVER_ERROR,
-			);
-		}
+		
 	}
 
 	@ApiOperation({ summary: 'User login' })
@@ -77,7 +70,7 @@ export class UserController {
 	): Promise<UserLoginRegisterControllerReturn> {
 		const { emailOrUsername, password } = input;
 
-		try {
+	
 			const user =
 				(await this.userService.findUserByEmail(emailOrUsername)) ||
 				(await this.userService.findUserByUsername(emailOrUsername));
@@ -103,12 +96,7 @@ export class UserController {
 				token: await this.AuthService.GenToken(user._id),
 				user,
 			};
-		} catch (error) {
-			throw new HttpException(
-				'INTERNAL SERVER ERROR',
-				HttpStatus.INTERNAL_SERVER_ERROR,
-			);
-		}
+		
 	}
 
 	@ApiOperation({

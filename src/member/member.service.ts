@@ -131,6 +131,7 @@ export class MemberService {
 		guildId: string | undefined,
 		userId: string | undefined,
 		onlyMember = false,
+		guildDelete = false,
 	) {
 		if (!userId) {
 			throw new Error('Guild ID/User ID is not provided');
@@ -168,8 +169,12 @@ export class MemberService {
 				guilds: new mongoose.Types.ObjectId(guildId),
 			},
 		});
-
-		await member.delete();
+		if (guildDelete) {
+			await member.delete();
+		} else {
+			member.removed = true;
+			await member.save();
+		}
 
 		return member;
 	}

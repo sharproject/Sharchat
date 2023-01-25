@@ -58,6 +58,10 @@ export class Member {
     @ApiProperty()
     @Prop({ default: false, isRequired: true })
     public isOwner: boolean;
+
+    @ApiProperty()
+    @Prop({default:false , isRequired: true})
+    removed:boolean
 }
 
 export const MemberSchema = SchemaFactory.createForClass(Member);
