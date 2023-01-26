@@ -48,33 +48,33 @@ export class GuildController {
 		}
 		const description = input.description && '';
 
-			const guild = await this.guildService.CreateNewGuildForRoute(
-				{
-					name,
-					description,
-				},
-				res.locals.userId,
-			);
-			const EveryOneRole = await this.guildService.OnlyThisModule_CreateDefaultRoleForGuild(
+		const guild = await this.guildService.CreateNewGuildForRoute(
+			{
+				name,
+				description,
+			},
+			res.locals.userId,
+		);
+		const EveryOneRole =
+			await this.guildService.OnlyThisModule_CreateDefaultRoleForGuild(
 				guild._id,
 			);
-			guild.everyoneRole = EveryOneRole;
-			guild.role.push(EveryOneRole);
-			await guild.save();
-			const member = await this.guildService.OnlyThisModule_CreateMember(
-				guild._id,
-				res.locals.userId,
-				{
-					isOwner: true,
-				},
-			);
-			res.status(HttpStatus.CREATED);
-			return {
-				message: 'Guild created',
-				guild: await guild.save(),
-				member,
-			};
-		
+		guild.everyoneRole = EveryOneRole;
+		guild.role.push(EveryOneRole);
+		await guild.save();
+		const member = await this.guildService.OnlyThisModule_CreateMember(
+			guild._id,
+			res.locals.userId,
+			{
+				isOwner: true,
+			},
+		);
+		res.status(HttpStatus.CREATED);
+		return {
+			message: 'Guild created',
+			guild: await guild.save(),
+			member,
+		};
 	}
 
 	@ApiResponse({
@@ -97,10 +97,11 @@ export class GuildController {
 				HttpStatus.BAD_REQUEST,
 			);
 		}
-		const result = await this.guildService.memberService.MemberUtilCheckPermission(
-			res.locals.userId,
-			guild._id,
-		);
+		const result =
+			await this.guildService.memberService.MemberUtilCheckPermission(
+				res.locals.userId,
+				guild._id,
+			);
 		if (!result.isOwner) {
 			throw new HttpException(
 				{
@@ -169,10 +170,11 @@ export class GuildController {
 				HttpStatus.NOT_FOUND,
 			);
 		}
-		const result = await this.guildService.memberService.MemberUtilCheckPermission(
-			res.locals.userId,
-			guild._id,
-		);
+		const result =
+			await this.guildService.memberService.MemberUtilCheckPermission(
+				res.locals.userId,
+				guild._id,
+			);
 		if (!result.permissions.canEditGuild()) {
 			throw new HttpException(
 				{

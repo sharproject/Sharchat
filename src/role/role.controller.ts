@@ -12,7 +12,5 @@ export class RoleController {
 	constructor(private readonly roleService: RoleService) {}
 
 	@Post('/create')
-	async CreateNewRole(@Body() input: CreateRoleInput) {
-		
-	}
+	async CreateNewRole(@Body() input: CreateRoleInput) {}
 }

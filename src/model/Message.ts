@@ -7,58 +7,58 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export type MessageDocument = HydratedDocument<Message>;
 @Schema({
-    timestamps: true,
+	timestamps: true,
 })
 export class Message {
-    constructor() {}
-    @ApiProperty()
-    public _id: string;
+	constructor() {}
+	@ApiProperty()
+	public _id: string;
 
-     @ApiProperty({
-        type: () => Date,
-    })
-    @Prop({ isRequired: true, default: Date.now() })
-    public createdAt: Date;
+	@ApiProperty({
+		type: () => Date,
+	})
+	@Prop({ isRequired: true, default: Date.now() })
+	public createdAt: Date;
 
-     @ApiProperty({
-        type: () => Date,
-    })
-    @Prop({ isRequired: true, default: Date.now() })
-    public updatedAt: Date;
+	@ApiProperty({
+		type: () => Date,
+	})
+	@Prop({ isRequired: true, default: Date.now() })
+	public updatedAt: Date;
 
-    @ApiProperty({
-        type: () => User,
-    })
-    @Prop({
-        isRequired: true,
-        type: mongoose.Types.ObjectId,
-        ref: 'User',
-    })
-    public User: User;
+	@ApiProperty({
+		type: () => User,
+	})
+	@Prop({
+		isRequired: true,
+		type: mongoose.Types.ObjectId,
+		ref: 'User',
+	})
+	public User: User;
 
-    @ApiProperty({
-        type: () => Channel,
-    })
-    @Prop({
-        isRequired: true,
-        type: mongoose.Types.ObjectId,
-        ref: 'Channel',
-    })
-    public Channel: Channel;
+	@ApiProperty({
+		type: () => Channel,
+	})
+	@Prop({
+		isRequired: true,
+		type: mongoose.Types.ObjectId,
+		ref: 'Channel',
+	})
+	public Channel: Channel;
 
-    //   @Prop({ isRequired: false })
-    //   public threadId?: string;
+	//   @Prop({ isRequired: false })
+	//   public threadId?: string;
 
-    @ApiProperty({
-        type: () => Member,
-    })
-    @Prop({
-        type: mongoose.Types.ObjectId,
-        ref: 'Member',
-        isRequired: true,
-        default: '',
-    })
-    public member: Member;
+	@ApiProperty({
+		type: () => Member,
+	})
+	@Prop({
+		type: mongoose.Types.ObjectId,
+		ref: 'Member',
+		isRequired: true,
+		default: '',
+	})
+	public member: Member;
 }
 
 export const MessageSchema = SchemaFactory.createForClass(Message);

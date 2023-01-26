@@ -4,7 +4,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { HttpExceptionFilter } from './util/http-exception.filter';
 
-async function bootstrap() {
+export async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
 
 	// setup class Validation

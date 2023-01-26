@@ -33,29 +33,28 @@ export class UserController {
 	): Promise<UserLoginRegisterControllerReturn> {
 		const { email, password, username } = registerData;
 
-			const alreadyUser =
-				(await this.userService.findUserByEmail(email)) ||
-				(await this.userService.findUserByUsername(username));
-			if (alreadyUser) {
-				throw new HttpException(
-					{
-						message: 'Username or email is already taken',
-					},
-					HttpStatus.BAD_REQUEST,
-				);
-			}
-			const hashPassword = await bcrypt.hash(password, 10);
-			const user = await this.userService.CreateNewUser({
-				username,
-				email,
-				password: hashPassword,
-			});
-			return {
-				message: 'User created successfully',
-				token: await this.AuthService.GenToken(user._id),
-				user,
-			};
-		
+		const alreadyUser =
+			(await this.userService.findUserByEmail(email)) ||
+			(await this.userService.findUserByUsername(username));
+		if (alreadyUser) {
+			throw new HttpException(
+				{
+					message: 'Username or email is already taken',
+				},
+				HttpStatus.BAD_REQUEST,
+			);
+		}
+		const hashPassword = await bcrypt.hash(password, 10);
+		const user = await this.userService.CreateNewUser({
+			username,
+			email,
+			password: hashPassword,
+		});
+		return {
+			message: 'User created successfully',
+			token: await this.AuthService.GenToken(user._id),
+			user,
+		};
 	}
 
 	@ApiOperation({ summary: 'User login' })
@@ -70,33 +69,31 @@ export class UserController {
 	): Promise<UserLoginRegisterControllerReturn> {
 		const { emailOrUsername, password } = input;
 
-	
-			const user =
-				(await this.userService.findUserByEmail(emailOrUsername)) ||
-				(await this.userService.findUserByUsername(emailOrUsername));
-			if (!user) {
-				throw new HttpException(
-					{
-						message: 'User not found',
-					},
-					HttpStatus.BAD_REQUEST,
-				);
-			}
-			const isMatch = await bcrypt.compare(password, user.password);
-			if (!isMatch) {
-				throw new HttpException(
-					{
-						message: 'Password is incorrect',
-					},
-					HttpStatus.BAD_REQUEST,
-				);
-			}
-			return {
-				message: 'Login successfully',
-				token: await this.AuthService.GenToken(user._id),
-				user,
-			};
-		
+		const user =
+			(await this.userService.findUserByEmail(emailOrUsername)) ||
+			(await this.userService.findUserByUsername(emailOrUsername));
+		if (!user) {
+			throw new HttpException(
+				{
+					message: 'User not found',
+				},
+				HttpStatus.BAD_REQUEST,
+			);
+		}
+		const isMatch = await bcrypt.compare(password, user.password);
+		if (!isMatch) {
+			throw new HttpException(
+				{
+					message: 'Password is incorrect',
+				},
+				HttpStatus.BAD_REQUEST,
+			);
+		}
+		return {
+			message: 'Login successfully',
+			token: await this.AuthService.GenToken(user._id),
+			user,
+		};
 	}
 
 	@ApiOperation({

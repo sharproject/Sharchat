@@ -5,38 +5,39 @@ import { Member } from '../model/Member';
 import { BaseControllerResponse } from '.';
 
 export class JoinGuildInput {
-    @ApiProperty()
-    @IsNotEmpty()
-    id: string;
+	@ApiProperty()
+	@IsNotEmpty()
+	id: string;
 }
 export class LeaveGuildInput {
-    @ApiProperty()
-    @IsNotEmpty()
-    id: string;
+	@ApiProperty()
+	@IsNotEmpty()
+	id: string;
 }
 
 export class JoinGuildResponse extends BaseControllerResponse {
-    @ApiProperty({
-        description: 'user was join guild before (true if user join and then leave)',
-    })
-    Joined: boolean;
-    @ApiProperty()
-    guild: Guild;
-    @ApiProperty()
-    member: Member;
+	@ApiProperty({
+		description:
+			'user was join guild before (true if user join and then leave)',
+	})
+	Joined: boolean;
+	@ApiProperty()
+	guild: Guild;
+	@ApiProperty()
+	member: Member;
 }
 
 export class LeaveGuildResponse extends BaseControllerResponse {
-    @ApiProperty()
-    guild: Guild;
-    @ApiProperty()
-    member: Member;
+	@ApiProperty()
+	guild: Guild;
+	@ApiProperty()
+	member: Member;
 }
 
 export class GetMemberResponse extends BaseControllerResponse {
-    @ApiProperty({
-        type: () => Member,
-        nullable: true,
-    })
-    member: Member | null;
+	@ApiProperty({
+		type: () => Member,
+		nullable: true,
+	})
+	member: Member | null;
 }
