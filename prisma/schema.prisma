@@ -1,0 +1,91 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String
+  password  String
+  email     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt()
+  guilds    Guild[]
+
+  Message Message[]
+}
+
+model Guild {
+  id          Int       @id @default(autoincrement())
+  createAt    DateTime  @default(now())
+  updateAt    DateTime  @updatedAt
+  name        String
+  description String
+  // owner User
+  members     Member[]
+  channels    Channel[]
+  // everyoneRole Role
+  role        Role[]
+  User        User?     @relation(fields: [userId], references: [id])
+  userId      Int?
+}
+
+model Member {
+  id       String    @id @default(uuid())
+  joinedAt DateTime  @default(now())
+  updateAt DateTime  @updatedAt()
+  // user User
+  // guild Guild[]
+  // Role 
+  isOwner  Boolean
+  removed  Boolean
+  Guild    Guild?    @relation(fields: [guildId], references: [id])
+  guildId  Int?
+  Message  Message[]
+  Role     Role[]    @relation(fields: [roleId], references: [id])
+  roleId   String[]
+}
+
+model Channel {
+  id          String    @id @default(uuid())
+  createAt    DateTime  @default(now())
+  updateAt    DateTime  @updatedAt()
+  name        String
+  description String    @default("")
+  guild       Guild[]
+  message     Message[]
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  createAt  DateTime @default(now())
+  updateAt  DateTime @updatedAt()
+  User      User     @relation(fields: [userId], references: [id])
+  Channel   Channel  @relation(fields: [channelId], references: [id])
+  member    Member   @relation(fields: [memberId], references: [id])
+  userId    Int
+  channelId String
+  memberId  String
+}
+
+model Role {
+  RoleName  String
+  id        String   @id @default(uuid())
+  createAt  DateTime @default(now())
+  updateAt  DateTime @updatedAt()
+  guild     Guild    @relation(fields: [guildId], references: [id])
+  hide      Boolean  @default(false)
+  position  Int      @default(1)
+  member    Member[]
+  color     String   @default("#fffff")
+  hideInNav Boolean  @default(false)
+
+  guildId Int
+}
