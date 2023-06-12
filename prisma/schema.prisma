@@ -49,8 +49,7 @@ model Member {
   Guild    Guild?    @relation(fields: [guildId], references: [id])
   guildId  Int?
   Message  Message[]
-  Role     Role[]    @relation(fields: [roleId], references: [id])
-  roleId   String[]
+  Role     Role[]
 }
 
 model Channel {
