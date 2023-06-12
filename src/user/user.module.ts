@@ -13,6 +13,8 @@ import { AuthenticationModule } from '../Authentication/authentication.module';
 import { AuthenticationService } from 'src/Authentication/authentication.service';
 import { AuthenticationMiddleware } from 'src/Authentication/authentication.middleware';
 import { UserAuthController } from './user.auth.controller';
+import { Prisma } from '@prisma/client';
+import { PrismaModule } from 'src/prisma/prisma.module';
 
 @Module({
 	controllers: [UserController, UserAuthController],
@@ -20,6 +22,7 @@ import { UserAuthController } from './user.auth.controller';
 	imports: [
 		MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
 		AuthenticationModule.GetAuthUtil(),
+		PrismaModule,
 	],
 	exports: [
 		MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),

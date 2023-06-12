@@ -4,11 +4,13 @@ import { User, UserDocument } from '../model/User';
 import { Model } from 'mongoose';
 import mongoose from 'mongoose';
 import { RegisterUserInput } from '../typings';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class UserService {
 	constructor(
 		@InjectModel(User.name) private UserModel: Model<UserDocument>,
+		private prisma: PrismaService,
 	) {}
 	async findUserByEmail(email: string) {
 		return await this.UserModel.findOne({ email: email });
