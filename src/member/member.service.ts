@@ -31,7 +31,9 @@ export class MemberService {
 		}
 
 		if (!options.isOwner) options.isOwner = false;
-		const user = await this.userService.findUserByID(userId);
+		const user = await this.userService.findUserByID<{ guilds: true }>(userId, {
+			guilds: true,
+		});
 		if (!user) {
 			throw new Error('User not found');
 		}
@@ -46,7 +48,6 @@ export class MemberService {
 			Role: [guild.everyoneRole._id],
 			...options,
 		}).save();
-		user.guilds.push(guild);
 		const everyoneRole = await this.roleService.findRoleById(
 			guild.everyoneRole._id,
 		);
@@ -56,7 +57,7 @@ export class MemberService {
 		await everyoneRole?.save();
 		await guild.save();
 		await member.save();
-		await user.save();
+		await this.userService.UpdateUserGuild(user.id, guild.id);
 		return await member.save();
 	}
 	async findMemberById(id: string) {
@@ -85,7 +86,7 @@ export class MemberService {
 		}
 
 		const member = await this.MemberModel.findOne({
-			user: user._id,
+			user: user.id,
 			guild: guild._id,
 		});
 
@@ -98,10 +99,7 @@ export class MemberService {
 		if (!member.isOwner) {
 			for (const role_id in member.Role) {
 				if (
-					await permissionUtil.addRole(
-						role_id,
-						this.roleService.GetRoleModel(),
-					)
+					await permissionUtil.addRole(role_id, this.roleService.GetRoleModel())
 				) {
 					member.Role = member.Role.filter((id) => id._id != role_id);
 				}
@@ -136,12 +134,15 @@ export class MemberService {
 		if (!userId) {
 			throw new Error('Guild ID/User ID is not provided');
 		}
+		if (!guildId) {
+			throw new Error('Guild ID/User ID is not provided');
+		}
 		const user = await this.userService.findUserByID(userId);
 		if (!user) {
 			throw new Error('User not found');
 		}
 		const member = await this.MemberModel.findOne({
-			userId: user._id,
+			userId: user.id,
 			guildId: guildId,
 		});
 		if (!member) {
@@ -154,21 +155,14 @@ export class MemberService {
 				},
 			});
 			for (const role of member.Role) {
-				await this.roleService
-					.GetRoleModel()
-					.findByIdAndUpdate(role._id, {
-						$pull: {
-							member: member._id,
-						},
-					});
+				await this.roleService.GetRoleModel().findByIdAndUpdate(role._id, {
+					$pull: {
+						member: member._id,
+					},
+				});
 			}
 		}
-
-		await user.updateOne({
-			$pull: {
-				guilds: new mongoose.Types.ObjectId(guildId),
-			},
-		});
+		await this.userService.DeleteGuildForUser(user.id, guildId);
 		if (guildDelete) {
 			await member.delete();
 		} else {
@@ -212,19 +206,11 @@ class PermissionUtilClass {
 		for (const p of role.permissions) {
 			if (p.metadata) {
 				if (p.metadata.name == 'view_channel') {
-					this.metadata.ViewChannel.Block.push(
-						...p.metadata.block_channel,
-					);
-					this.metadata.ViewChannel.Allow.push(
-						...p.metadata.allow_channel,
-					);
+					this.metadata.ViewChannel.Block.push(...p.metadata.block_channel);
+					this.metadata.ViewChannel.Allow.push(...p.metadata.allow_channel);
 				} else if (p.metadata.name == 'send_message') {
-					this.metadata.SendMessage.Block.push(
-						...p.metadata.block_channel,
-					);
-					this.metadata.SendMessage.Allow.push(
-						...p.metadata.allow_channel,
-					);
+					this.metadata.SendMessage.Block.push(...p.metadata.block_channel);
+					this.metadata.SendMessage.Allow.push(...p.metadata.allow_channel);
 				}
 			}
 		}

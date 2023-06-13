@@ -52,7 +52,7 @@ export class UserController {
 		});
 		return {
 			message: 'User created successfully',
-			token: await this.AuthService.GenToken(user._id),
+			token: await this.AuthService.GenToken(user.id),
 			user,
 		};
 	}
@@ -91,7 +91,7 @@ export class UserController {
 		}
 		return {
 			message: 'Login successfully',
-			token: await this.AuthService.GenToken(user._id),
+			token: await this.AuthService.GenToken(user.id),
 			user,
 		};
 	}

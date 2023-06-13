@@ -1,7 +1,7 @@
 import { IsEmail, IsNotEmpty } from 'class-validator';
 import { BaseControllerResponse } from '.';
 import { ApiProperty } from '@nestjs/swagger';
-import { User } from '../model/User';
+import { User } from '@prisma/client';
 
 export class UserLoginRegisterControllerReturn extends BaseControllerResponse {
 	@ApiProperty({
