@@ -1,4 +1,4 @@
-FROM node:lts AS development
+FROM node:lts-alpine AS development
 WORKDIR /usr/src/app
 
 COPY package.json ./
@@ -11,7 +11,7 @@ COPY . .
 RUN npm run prisma:client
 RUN npm run build
 
-FROM node:lts as production
+FROM node:lts-alpine as production
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
 
