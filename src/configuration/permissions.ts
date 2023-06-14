@@ -1,4 +1,4 @@
-import { PermissionType } from '../model/Role';
+import { PermissionType } from 'src/typings';
 
 const permissions = {
 	admin: 'Server Administrator',
