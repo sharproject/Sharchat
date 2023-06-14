@@ -48,7 +48,7 @@ export class GuildService {
 	async OnlyThisModule_CreateDefaultRoleForGuild(GuildID: string) {
 		return await this.roleService.CreateEveryoneRoleForGuild({
 			RoleName: '@everyone',
-			guild: GuildID,
+			guildId: GuildID,
 			permissions: everyonePermissionDefault,
 			position: 1,
 		});
