@@ -11,36 +11,36 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   username  String
   password  String
   email     String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt()
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt()
   guilds    Guild[]
-
-  Message Message[]
+  Message   Message[]
+  Member    Member[]
 }
 
 model Guild {
-  id          String    @id @default(uuid())
-  createAt    DateTime  @default(now())
-  updateAt    DateTime  @updatedAt
-  name        String
-  description String
-  // owner User
-  members     Member[]
-  channels    Channel[]
-  // everyoneRole Role
-  role        Role[]
-  User        User[]
+  id             String    @id @default(uuid())
+  createAt       DateTime  @default(now())
+  updateAt       DateTime  @updatedAt
+  name           String
+  description    String
+  owner          User      @relation(fields: [userId], references: [id])
+  members        Member[]
+  channels       Channel[]
+  roles          Role[]
+  everyoneRoleId String
+  userId         String
 }
 
 model Member {
   id       String    @id @default(uuid())
   joinedAt DateTime  @default(now())
   updateAt DateTime  @updatedAt()
-  // user User
+  user     User      @relation(fields: [userId], references: [id])
   // guild Guild[]
   // Role 
   isOwner  Boolean
@@ -49,6 +49,7 @@ model Member {
   guildId  String
   Message  Message[]
   Role     Role[]
+  userId   String
 }
 
 model Channel {
