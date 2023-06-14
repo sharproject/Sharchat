@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty } from 'class-validator';
-import { Guild } from '../model/Guild';
-import { Member } from '../model/Member';
+import { Guild } from '@prisma/client';
+import { Member } from '@prisma/client';
 import { BaseControllerResponse } from '.';
 
 export class JoinGuildInput {
@@ -36,7 +36,7 @@ export class LeaveGuildResponse extends BaseControllerResponse {
 
 export class GetMemberResponse extends BaseControllerResponse {
 	@ApiProperty({
-		type: () => Member,
+		// type: () => Member,
 		nullable: true,
 	})
 	member: Member | null;

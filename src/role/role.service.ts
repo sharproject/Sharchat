@@ -1,12 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { PermissionType, Role, RoleDocument } from '../model/Role';
 import { PrismaService } from '../prisma/prisma.service';
+import { PermissionType } from '../typings';
 
 @Injectable()
 export class RoleService {
-	constructor(
-		private readonly prismaService: PrismaService,
-	) {}
+	constructor(private readonly prismaService: PrismaService) {}
 	async CreateEveryoneRoleForGuild(input: {
 		RoleName: string;
 		guildId: string;
@@ -17,6 +15,7 @@ export class RoleService {
 			data: {
 				...input,
 				hideInNav: true,
+				permissions: JSON.stringify(input.permissions)
 			},
 		});
 	}
@@ -34,6 +33,20 @@ export class RoleService {
 		return await this.prismaService.role.findFirst({
 			where: {
 				id,
+			},
+		});
+	}
+	async addMemberToRole(roleId: string, meberId: string) {
+		return this.prismaService.role.update({
+			where: {
+				id: roleId,
+			},
+			data: {
+				member: {
+					connect: {
+						id: meberId,
+					},
+				},
 			},
 		});
 	}

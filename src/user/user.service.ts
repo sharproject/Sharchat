@@ -1,15 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { User, UserDocument } from '../model/User';
-import { Model } from 'mongoose';
 import { RegisterUserInput } from '../typings';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class UserService {
-	constructor(
-		private prisma: PrismaService,
-	) {}
+	constructor(private prisma: PrismaService) {}
 	async findUserByEmail(
 		email: string,
 		include?: {
@@ -74,7 +69,7 @@ export class UserService {
 		return await this.prisma.user.update({
 			data: {
 				guilds: {
-					delete: {
+					disconnect: {
 						id: guildId,
 					},
 				},

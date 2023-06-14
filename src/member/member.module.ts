@@ -16,26 +16,16 @@ import { MemberNotAuthController } from './member.not_auth.controller';
 import { AuthenticationMiddleware } from 'src/Authentication/authentication.middleware';
 import { AuthenticationModule } from 'src/Authentication/authentication.module';
 import { AuthenticationService } from 'src/Authentication/authentication.service';
+import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({
 	providers: [MemberService],
 	controllers: [MemberController, MemberNotAuthController],
 	imports: [
 		AuthenticationModule,
-		MongooseModule.forFeature([
-			{
-				name: Member.name,
-				schema: MemberSchema,
-			},
-		]),
 		UserModule.GetUserModule(),
-		MongooseModule.forFeature([
-			{
-				name: Guild.name,
-				schema: GuildSchema,
-			},
-		]),
 		RoleModule.GetRoleModule(),
+		PrismaModule
 	],
 	exports: [MemberService],
 })

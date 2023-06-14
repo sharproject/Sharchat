@@ -28,12 +28,12 @@ model Guild {
   updateAt       DateTime  @updatedAt
   name           String
   description    String
-  owner          User      @relation(fields: [userId], references: [id])
+  owner          User      @relation(fields: [ownerID], references: [id])
   members        Member[]
   channels       Channel[]
   roles          Role[]
   everyoneRoleId String
-  userId         String
+  ownerID        String
 }
 
 model Member {
@@ -43,13 +43,15 @@ model Member {
   user     User      @relation(fields: [userId], references: [id])
   // guild Guild[]
   // Role 
-  isOwner  Boolean
-  removed  Boolean
+  isOwner  Boolean   @default(false)
+  removed  Boolean   @default(false)
   Guild    Guild     @relation(fields: [guildId], references: [id])
   guildId  String
   Message  Message[]
   Role     Role[]
   userId   String
+
+  // @@id([userId, guildId])
 }
 
 model Channel {
@@ -75,16 +77,17 @@ model Message {
 }
 
 model Role {
-  RoleName  String
-  id        String   @id @default(uuid())
-  createAt  DateTime @default(now())
-  updateAt  DateTime @updatedAt()
-  guild     Guild    @relation(fields: [guildId], references: [id])
-  hide      Boolean  @default(false)
-  position  Int      @default(1)
-  member    Member[]
-  color     String   @default("#fffff")
-  hideInNav Boolean  @default(false)
+  RoleName    String
+  id          String   @id @default(uuid())
+  createAt    DateTime @default(now())
+  updateAt    DateTime @updatedAt()
+  guild       Guild    @relation(fields: [guildId], references: [id])
+  hide        Boolean  @default(false)
+  position    Int      @default(1)
+  member      Member[]
+  color       String   @default("#fffff")
+  hideInNav   Boolean  @default(false)
+  permissions String
 
   guildId String
 }
