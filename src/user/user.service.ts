@@ -8,7 +8,6 @@ import { PrismaService } from 'src/prisma/prisma.service';
 @Injectable()
 export class UserService {
 	constructor(
-		@InjectModel(User.name) private UserModel: Model<UserDocument>,
 		private prisma: PrismaService,
 	) {}
 	async findUserByEmail(

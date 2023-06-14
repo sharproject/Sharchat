@@ -20,12 +20,10 @@ import { PrismaModule } from 'src/prisma/prisma.module';
 	controllers: [UserController, UserAuthController],
 	providers: [UserService],
 	imports: [
-		MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
 		AuthenticationModule.GetAuthUtil(),
 		PrismaModule,
 	],
 	exports: [
-		MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
 		UserService,
 	],
 })
@@ -42,15 +40,10 @@ export class UserModule implements NestModule {
 			module: UserModule,
 			providers: [UserService],
 			imports: [
-				MongooseModule.forFeature([
-					{ name: User.name, schema: UserSchema },
-				]),
+				
 				AuthenticationModule.GetAuthUtil(),
 			],
 			exports: [
-				MongooseModule.forFeature([
-					{ name: User.name, schema: UserSchema },
-				]),
 				UserService,
 			],
 		};
