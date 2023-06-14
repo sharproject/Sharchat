@@ -50,4 +50,11 @@ export class RoleService {
 			},
 		});
 	}
+	async deleteAllGuildRole(guildID: string) {
+		return await this.prismaService.role.deleteMany({
+			where: {
+				guildId:guildID
+			}
+		})
+	}
 }

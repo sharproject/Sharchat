@@ -125,9 +125,7 @@ export class GuildController {
 		}
 
 		try {
-			(
-				await this.guildService.roleService.findRoleInGuild(guild._id)
-			).map((d) => d.delete());
+			await this.guildService.roleService.deleteAllGuildRole(guild._id);
 		} catch (err) {
 			console.log(err);
 		}
