@@ -1,0 +1,33 @@
+services:
+  # will remove 
+  mongo-db:
+    container_name: mongo-db
+    image: mongo
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=root
+    restart: always
+    volumes:
+      - mongoDB:/data/db
+    command: --quiet --logpath /dev/null
+    
+  postgres:
+    container_name: postgres
+    image: postgres:alpine
+    environment:
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_USER=root
+      - POSTGRES_DB=sharchat
+    volumes:
+      - postgres:/var/lib/postgresql/data
+  server:
+    container_name: sharchat
+    build: .
+    env_file:
+      - ./.env
+    ports:
+      - "8080:8080"
+    
+volumes:
+  mongoDB:
+  postgres:

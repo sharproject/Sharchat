@@ -18,8 +18,12 @@
 		"test:cov": "jest --coverage",
 		"test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
 		"test:e2e": "jest --config ./test/jest-e2e.json",
-		"prisma:gen": "prisma generate",
-		"postinstall": "npm run prisma:gen",
+		"prisma:client": "prisma generate",
+		"prisma:create:migrate": "prisma migrate dev --name",
+		"prisma:apply:migrate": "prisma migrate dev",
+		"prisma:deploy": "prisma migrate deploy",
+		"prisma:pull": "prisma db pull",
+		"postinstall": "npm run prisma:client",
 		"format:all": "prettier --write ."
 	},
 	"dependencies": {
