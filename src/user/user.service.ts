@@ -1,7 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { User, UserDocument } from '../model/User';
-import { Model } from 'mongoose';
 import { RegisterUserInput } from '../typings';
 import { PrismaService } from 'src/prisma/prisma.service';
 

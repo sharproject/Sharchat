@@ -6,7 +6,8 @@ import {
 } from '@nestjs/common';
 import { MemberService } from './member.service';
 import { MemberController } from './member.controller';
-import { MongooseModule } from '@nestjs/mongoose';
+// import { MongooseModule } from '@nestjs/mongoose';
+import { PrismaModule } from 'src/prisma/prisma.module';
 import { Member, MemberSchema } from '../model/Member';
 import { UserModule } from '../user/user.module';
 import { GuildModule } from '../guild/guild.module';
@@ -22,20 +23,9 @@ import { AuthenticationService } from 'src/Authentication/authentication.service
 	controllers: [MemberController, MemberNotAuthController],
 	imports: [
 		AuthenticationModule,
-		MongooseModule.forFeature([
-			{
-				name: Member.name,
-				schema: MemberSchema,
-			},
-		]),
 		UserModule.GetUserModule(),
-		MongooseModule.forFeature([
-			{
-				name: Guild.name,
-				schema: GuildSchema,
-			},
-		]),
 		RoleModule.GetRoleModule(),
+		PrismaModule
 	],
 	exports: [MemberService],
 })
@@ -52,14 +42,9 @@ export class MemberModule implements NestModule {
 			module: MemberModule,
 			providers: [MemberService],
 			imports: [
-				MongooseModule.forFeature([
-					{
-						name: Member.name,
-						schema: MemberSchema,
-					},
-				]),
 				UserModule.GetUserModule(),
 				RoleModule.GetRoleModule(),
+				PrismaModule
 			],
 			exports: [MemberService],
 		};

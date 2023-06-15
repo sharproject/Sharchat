@@ -10,6 +10,7 @@ export type RoleDocument = HydratedDocument<Role>;
 	timestamps: true,
 })
 export class Role {
+	static push: any;
 	constructor() {}
 
 	@ApiProperty()

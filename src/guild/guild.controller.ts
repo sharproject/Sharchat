@@ -1,6 +1,8 @@
 import { IsNotEmpty, IsOptional } from 'class-validator';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { GuildService } from './guild.service';
 import { Response } from 'express';
+import { GuildModule } from './guild.module';
 import {
 	Body,
 	Controller,
@@ -21,12 +23,20 @@ import {
 	EditGuildResponse,
 } from '../typings/Guild';
 import { AuthTag } from '../constant';
+import { Role } from 'src/model/Role';
+import { connect } from 'http2';
+
 
 @ApiTags('guild', AuthTag)
 @ApiBearerAuth()
 @Controller('guild')
 export class GuildController {
-	constructor(private readonly guildService: GuildService) {}
+	constructor(
+		private readonly guildService: GuildService,
+		private readonly guildModel: GuildModule,
+		
+		private readonly prismaService: PrismaService,
+		) {}
 
 	@ApiResponse({
 		status: HttpStatus.CREATED,
@@ -57,13 +67,40 @@ export class GuildController {
 		);
 		const EveryOneRole =
 			await this.guildService.OnlyThisModule_CreateDefaultRoleForGuild(
-				guild._id,
+				guild.id,
 			);
-		guild.everyoneRole = EveryOneRole;
-		guild.role.push(EveryOneRole);
-		await guild.save();
+		/*guild.everyoneRoleId = EveryOneRole;*/
+		
+		/*guild.role.push(EveryOneRole);*/
+		this.prismaService.guild.findUnique({
+			where : {
+				id: guild.id
+			},
+			select : {
+				role : {
+					select: {
+						guild : Role.push(EveryOneRole)
+					},
+				}
+			},
+		});
+
+	//======================================================
+
+		//after
+		await this.prismaService.guild.update({
+			where: {
+				id: guild.id,
+			},
+			data: {
+ 				everyoneRoleId = EveryOneRole
+			},
+		});
+
+	//======================================================
+	
 		const member = await this.guildService.OnlyThisModule_CreateMember(
-			guild._id,
+			guild.id,
 			res.locals.userId,
 			{
 				isOwner: true,
@@ -75,7 +112,7 @@ export class GuildController {
 			guild: await guild.save(),
 			member,
 		};
-	}
+	} 
 
 	@ApiResponse({
 		status: HttpStatus.OK,

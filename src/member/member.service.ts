@@ -1,13 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Member, MemberDocument } from '../model/Member';
-import { Model } from 'mongoose';
+import { MemberDocument } from '../model/Member';
 import { UserService } from '../user/user.service';
-import { Guild, GuildDocument } from '../model/Guild';
 import permissions from 'src/configuration/permissions';
 import { RoleDocument } from 'src/model/Role';
 import { RoleService } from 'src/role/role.service';
-import mongoose from 'mongoose';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { Prisma } from '@prisma/client';
+import { PermissionType } from 'src/model/Role';
 
 export interface CreateMemberOption {
 	isOwner: boolean;
@@ -16,9 +15,9 @@ export interface CreateMemberOption {
 @Injectable()
 export class MemberService {
 	constructor(
-		@InjectModel(Member.name) private MemberModel: Model<MemberDocument>,
-		private readonly userService: UserService,
-		@InjectModel(Guild.name) private guildModel: Model<GuildDocument>,
+		private readonly prismaService : PrismaService,
+
+		private readonly userService   : UserService,
 		private readonly roleService: RoleService,
 	) {}
 	async MemberUtilCreateMember(
@@ -38,34 +37,41 @@ export class MemberService {
 			throw new Error('User not found');
 		}
 
-		const guild = await this.guildModel.findById(guildId);
+		const guild = await this.prismaService.findById(guildId);
 		if (!guild) {
 			throw new Error('Guild not found');
 		}
-		const member = await new this.MemberModel({
-			user: user,
-			guild: guild,
-			Role: [guild.everyoneRole._id],
-			...options,
-		}).save();
+		const member = await this.prismaService.member.create({
+			data: {
+				userId: user.id,
+				guildId: guild.id,
+				Role: {
+					connect: {
+						id: guild.everyoneRoleId,
+					},
+				},
+				...options,
+			},
+		});
 		const everyoneRole = await this.roleService.findRoleById(
 			guild.everyoneRole._id,
 		);
-		await member.save();
-		everyoneRole?.member.push(member);
-		guild.members.push(member);
-		await everyoneRole?.save();
-		await guild.save();
-		await member.save();
+		this.roleService.addMember
 		await this.userService.UpdateUserGuild(user.id, guild.id);
 		return await member.save();
 	}
 	async findMemberById(id: string) {
-		return await this.MemberModel.findById(id);
+		return await this.prismaService.member.findUnique({
+			where : {
+				id: id,
+			},
+		});
 	}
 	async findMemberInGuild(guildId: string) {
-		return await this.MemberModel.find({
-			guild: guildId,
+		return await this.prismaService.role.findMany({
+			where: {
+				guildId: guildId,
+			},
 		});
 	}
 	async MemberUtilCheckPermission(userId: string, guildId: string) {
@@ -79,15 +85,22 @@ export class MemberService {
 			throw new Error('User not found');
 		}
 
-		const guild = await this.guildModel.findById(guildId);
+		const guild = await this.prismaService.guild.findUnique({
+			where: {
+				id : guildId
+			}
+		});
 
 		if (!guild) {
 			throw new Error('Guild not found');
 		}
 
-		const member = await this.MemberModel.findOne({
-			user: user.id,
-			guild: guild._id,
+		const member = await this.prismaService.member.create({
+			data: {
+				userId: user.id,
+				guildId: guildId,
+
+			},
 		});
 
 		if (!member) {

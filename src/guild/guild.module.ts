@@ -9,25 +9,19 @@ import { GuildController } from './guild.controller';
 import { AuthenticationModule } from '../Authentication/authentication.module';
 import { AuthenticationMiddleware } from '../Authentication/authentication.middleware';
 import { AuthenticationService } from 'src/Authentication/authentication.service';
-import { MongooseModule } from '@nestjs/mongoose';
-import { Guild, GuildSchema } from 'src/model/Guild';
 import { MemberModule } from '../member/member.module';
 import { RoleModule } from '../role/role.module';
 import { UserModule } from 'src/user/user.module';
 import { GuildNotAuthController } from './guild.not_auth.controller';
+import { PrismaModule } from 'src/prisma/prisma.module';
 
 @Module({
 	imports: [
-		MongooseModule.forFeature([
-			{
-				name: Guild.name,
-				schema: GuildSchema,
-			},
-		]),
 		AuthenticationModule.GetAuthUtil(),
 		MemberModule.GetMemberModel(),
 		RoleModule.GetRoleModule(),
 		UserModule.GetUserModule(),
+		PrismaModule
 	],
 	exports: [GuildService],
 	providers: [GuildService],
@@ -45,12 +39,6 @@ export class GuildModule implements NestModule {
 		return {
 			module: GuildModule,
 			imports: [
-				MongooseModule.forFeature([
-					{
-						name: Guild.name,
-						schema: GuildSchema,
-					},
-				]),
 				AuthenticationModule.GetAuthUtil(),
 				MemberModule.GetMemberModel(),
 				RoleModule.GetRoleModule(),
