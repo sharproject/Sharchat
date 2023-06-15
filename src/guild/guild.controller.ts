@@ -102,6 +102,14 @@ export class GuildController {
 				res.locals.userId,
 				guild._id,
 			);
+		if (!result) {
+			throw new HttpException(
+				{
+					message: 'Requested user is not in the guild',
+				},
+				HttpStatus.FORBIDDEN,
+			);
+		}
 		if (!result.isOwner) {
 			throw new HttpException(
 				{
@@ -173,6 +181,14 @@ export class GuildController {
 				res.locals.userId,
 				guild._id,
 			);
+		if (!result) {
+			throw new HttpException(
+				{
+					message: 'Requested user is not in the guild',
+				},
+				HttpStatus.FORBIDDEN,
+			);
+		}
 		if (!result.permissions.canEditGuild()) {
 			throw new HttpException(
 				{

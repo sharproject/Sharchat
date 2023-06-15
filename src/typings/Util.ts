@@ -1,25 +1,26 @@
-import permissions from "../configuration/permissions";
+import { ApiProperty } from '@nestjs/swagger';
+import permissions from '../configuration/permissions';
+import { IsString } from 'class-validator';
 
-export interface PermissionType {
+export class PermissionType {
+	@ApiProperty()
+	@IsString()
 	name: keyof typeof permissions;
-	metadata?: Metadata;
-}
-export const PermissionClass = class implements PermissionType {
-	name: keyof typeof permissions;
+	@ApiProperty()
 	metadata?: Metadata | undefined;
-};
+}
 
-interface BaseMetaData {
+class BaseMetaData {
 	name: keyof typeof permissions;
 }
 
-interface MetaDataForChannelView extends BaseMetaData {
+class MetaDataForChannelView extends BaseMetaData {
 	name: 'view_channel';
 	allow_channel: string | 'all'[];
 	block_channel: string | 'all'[];
 }
 
-interface MetaDataForChannelSendMessage extends BaseMetaData {
+class MetaDataForChannelSendMessage extends BaseMetaData {
 	name: 'send_message';
 	allow_channel: string | 'all'[];
 	block_channel: string | 'all'[];

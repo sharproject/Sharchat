@@ -133,7 +133,8 @@ export class MemberService {
 		});
 
 		if (!member) {
-			throw new Error('Member not found');
+			// throw new Error('Member not found');
+			return null;
 		}
 
 		const permissionUtil = new PermissionUtilClass(member.isOwner);
@@ -266,7 +267,7 @@ export class MemberService {
 	}
 }
 
-class PermissionUtilClass {
+export class PermissionUtilClass {
 	private permission: Array<keyof typeof permissions>;
 	metadata: {
 		ViewChannel: {
@@ -279,8 +280,10 @@ class PermissionUtilClass {
 		};
 	};
 	isOwner: boolean;
+	highestPosition: number;
 	constructor(isOwner: boolean) {
 		this.isOwner = isOwner;
+		this.highestPosition = 0;
 		if (isOwner) {
 			this.permission = Object.keys(permissions) as Array<
 				keyof typeof permissions
@@ -302,6 +305,9 @@ class PermissionUtilClass {
 		});
 		if (!role) {
 			return true;
+		}
+		if (this.highestPosition < role.position) {
+			this.highestPosition = Number(role.position);
 		}
 		const rolePermissions = JSON.parse(role.permissions) as PermissionType[];
 		const permissions = rolePermissions.map((i) => i.name);
@@ -345,6 +351,13 @@ class PermissionUtilClass {
 		return (
 			this.permission.includes('channel_manager') &&
 			!this.metadata.ViewChannel.Block.includes(channelID)
+		);
+	}
+
+	couldCreateRole(position: number) {
+		return (
+			this.permission.includes('role_manager') &&
+			this.highestPosition > position
 		);
 	}
 }

@@ -11,11 +11,12 @@ import { AuthenticationModule } from '../Authentication/authentication.module';
 import { AuthenticationService } from '../Authentication/authentication.service';
 import { RoleNotAuthController } from './role.not_auth.controller';
 import { PrismaModule } from '../prisma/prisma.module';
+import { MemberModule } from '../member/member.module';
 
 @Module({
 	providers: [RoleService],
 	controllers: [RoleController, RoleNotAuthController],
-	imports: [AuthenticationModule, PrismaModule],
+	imports: [AuthenticationModule, PrismaModule, MemberModule.GetMemberModel()],
 	exports: [RoleService],
 })
 export class RoleModule implements NestModule {

@@ -1,5 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsHexColor, IsNotEmpty, IsMongoId, IsBoolean } from 'class-validator';
+import {
+	IsHexColor,
+	IsNotEmpty,
+	IsMongoId,
+	IsBoolean,
+	IsNumber,
+	IsObject,
+} from 'class-validator';
+import { PermissionType } from './Util';
 
 export class CreateRoleInput {
 	@ApiProperty()
@@ -9,7 +17,7 @@ export class CreateRoleInput {
 	@ApiProperty()
 	@IsNotEmpty()
 	@IsMongoId()
-	guild: string;
+	guildId: string;
 
 	@ApiProperty()
 	@IsNotEmpty()
@@ -19,4 +27,11 @@ export class CreateRoleInput {
 	@ApiProperty()
 	@IsBoolean()
 	hide: boolean = false;
+
+	@ApiProperty()
+	@IsNumber({})
+	position?: number;
+
+	@ApiProperty()
+	permission: PermissionType[];
 }

@@ -1,7 +1,7 @@
 import { GuildEntity } from './Guild';
 import { MemberEntity } from './Member';
 import { ApiProperty } from '@nestjs/swagger';
-import { PermissionClass, PermissionType } from '../typings';
+import { PermissionType } from '../typings';
 import { Role } from '@prisma/client';
 
 export class RoleEntity implements Role {
@@ -27,8 +27,9 @@ export class RoleEntity implements Role {
 
 	@ApiProperty({
 		type: () => GuildEntity,
+		nullable:true
 	})
-	public guild: GuildEntity;
+	public guild?: GuildEntity;
 
 	@ApiProperty({
 		// type: () => [PermissionClass],
@@ -44,8 +45,9 @@ export class RoleEntity implements Role {
 
 	@ApiProperty({
 		type: () => [MemberEntity],
+		nullable:true
 	})
-	member: MemberEntity[];
+	member?: MemberEntity[];
 
 	@ApiProperty()
 	public color: string;

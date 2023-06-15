@@ -10,7 +10,7 @@ import { AuthenticationModule } from '../Authentication/authentication.module';
 import { AuthenticationMiddleware } from '../Authentication/authentication.middleware';
 import { AuthenticationService } from 'src/Authentication/authentication.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { GuildEntity, GuildEntity } from 'src/model/Guild';
+import { GuildEntity } from 'src/model/Guild';
 import { MemberModule } from '../member/member.module';
 import { RoleModule } from '../role/role.module';
 import { UserModule } from 'src/user/user.module';
