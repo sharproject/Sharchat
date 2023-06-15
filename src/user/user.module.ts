@@ -3,12 +3,9 @@ import {
 	MiddlewareConsumer,
 	Module,
 	NestModule,
-	RequestMethod,
 } from '@nestjs/common';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
-import { MongooseModule } from '@nestjs/mongoose';
-import { User, UserSchema } from '../model/User';
 import { AuthenticationModule } from '../Authentication/authentication.module';
 import { AuthenticationService } from 'src/Authentication/authentication.service';
 import { AuthenticationMiddleware } from 'src/Authentication/authentication.middleware';

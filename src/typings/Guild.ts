@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsOptional } from 'class-validator';
 import { BaseControllerResponse } from '.';
-import { Guild } from '../model/Guild';
-import { Member } from '../model/Member';
+import { GuildEntity } from '../model/Guild';
+import { MemberEntity } from '../model/Member';
 
 export class CreateGuildInput {
 	@ApiProperty()
@@ -39,19 +39,19 @@ export class CreateGuildResponse extends BaseControllerResponse {
 	@ApiProperty({
 		description: 'Guild info',
 	})
-	guild: Guild;
+	guild: GuildEntity;
 
 	@ApiProperty({
 		description: 'Member info',
 	})
-	member: Member;
+	member: MemberEntity;
 }
 
 export class DeleteGuildResponse extends BaseControllerResponse {
 	@ApiProperty({
 		description: 'Guild info',
 	})
-	guild: Guild;
+	guild: GuildEntity;
 }
 
 export class EditGuildResponse extends DeleteGuildResponse {}
@@ -59,7 +59,7 @@ export class EditGuildResponse extends DeleteGuildResponse {}
 export class GetGuildInfoResponse extends BaseControllerResponse {
 	@ApiProperty({
 		nullable: true,
-		type: () => Guild,
+		type: () => GuildEntity,
 	})
-	guild: Guild | null;
+	guild: GuildEntity | null;
 }

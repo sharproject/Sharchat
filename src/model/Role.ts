@@ -1,82 +1,55 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { HydratedDocument } from 'mongoose';
-import { Guild } from './Guild';
-import { Member } from './Member';
+import { GuildEntity } from './Guild';
+import { MemberEntity } from './Member';
 import { ApiProperty } from '@nestjs/swagger';
 import { PermissionClass, PermissionType } from '../typings';
+import { Role } from '@prisma/client';
 
-export type RoleDocument = HydratedDocument<Role>;
-@Schema({
-	timestamps: true,
-})
-export class Role {
+export class RoleEntity implements Role {
 	constructor() {}
 
+	guildId: string;
+
 	@ApiProperty()
-	@Prop({ isRequired: true, type: String })
 	public RoleName: string;
 
 	@ApiProperty()
-	public _id: string;
+	public id: string;
 
 	@ApiProperty({
 		type: () => Date,
 	})
-	@Prop({ isRequired: true, default: Date.now() })
 	public createdAt: Date;
 
 	@ApiProperty({
 		type: () => Date,
 	})
-	@Prop({ isRequired: true, default: Date.now() })
 	public updatedAt: Date;
 
 	@ApiProperty({
-		type: () => Guild,
+		type: () => GuildEntity,
 	})
-	@Prop({
-		isRequired: true,
-		type: mongoose.Types.ObjectId,
-		ref: 'Guild',
-	})
-	public guild: Guild;
+	public guild: GuildEntity;
 
 	@ApiProperty({
-		type: () => [PermissionClass],
+		// type: () => [PermissionClass],
 	})
-	@Prop({
-		isRequired: true,
-		default: [],
-	})
-	public permissions: Array<PermissionType>;
+	// public permissions: Array<PermissionType>;
+	permissions: string;
 
 	@ApiProperty()
-	@Prop({ isRequired: true, default: false })
 	public hide: boolean;
 
 	@ApiProperty()
-	@Prop({ isRequired: true, default: 1 })
 	public position: number;
 
 	@ApiProperty({
-		type: () => [Member],
+		type: () => [MemberEntity],
 	})
-	@Prop({
-		isRequired: true,
-		default: [],
-		type: [{ type: mongoose.Types.ObjectId, ref: 'Member' }],
-	})
-	member: Member[];
+	member: MemberEntity[];
 
 	@ApiProperty()
-	@Prop({ isRequired: true, default: '#fffff' })
 	public color: string;
 
 	@ApiProperty()
-	@Prop({ isRequired: true, default: false })
 	public hideInNav: boolean;
 }
-
-export const RoleSchema = SchemaFactory.createForClass(Role);
-RoleSchema.plugin(require('mongoose-autopopulate'));
-

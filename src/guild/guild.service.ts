@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Guild, GuildDocument } from 'src/model/Guild';
+import { GuildEntity, GuildDocument } from 'src/model/Guild';
 import { CreateMemberOption, MemberService } from '../member/member.service';
 import { RoleService } from '../role/role.service';
 import { everyonePermissionDefault } from '../configuration/permissions';
@@ -11,7 +11,7 @@ import { CreateGuildInput } from '../typings/Guild';
 @Injectable()
 export class GuildService {
 	constructor(
-		@InjectModel(Guild.name) private GuildModel: Model<GuildDocument>,
+		@InjectModel(GuildEntity.name) private GuildModel: Model<GuildDocument>,
 		public readonly memberService: MemberService,
 		public readonly roleService: RoleService,
 		public readonly userService: UserService,

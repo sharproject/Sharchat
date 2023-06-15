@@ -1,9 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { MemberDocument } from '../model/Member';
-import { Model } from 'mongoose';
+import { MemberEntity } from '../model/Member';
 import { UserService } from '../user/user.service';
 import permissions from 'src/configuration/permissions';
-import { RoleDocument } from 'src/model/Role';
 import { RoleService } from 'src/role/role.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma } from '@prisma/client';
@@ -71,11 +69,13 @@ export class MemberService {
 			},
 		});
 		await this.userService.UpdateUserGuild(user.id, guild.id);
-		return await this.prismaService.member.findUnique({
+		const returnMember = await this.prismaService.member.findUnique({
 			where: {
 				id: member.id,
 			},
 		});
+		if (!returnMember) throw new Error('Server Error');
+		return returnMember;
 	}
 	async findMemberById(id: string) {
 		return await this.prismaService.member.findUnique({
@@ -319,7 +319,7 @@ class PermissionUtilClass {
 		this.permission.push(...permissions);
 		return false;
 	}
-	canKickMember(another: MemberDocument) {
+	canKickMember(another: MemberEntity) {
 		another.Role;
 		return this.permission.includes('kick_member');
 	}
