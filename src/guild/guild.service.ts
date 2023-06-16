@@ -21,7 +21,6 @@ import { StringArraySupportOption } from 'prettier';
 export class GuildService {
 	constructor(
 		public readonly prismaService : PrismaService,
-
 		public readonly memberService: MemberService,
 		public readonly roleService: RoleService,
 		public readonly userService: UserService,
@@ -63,7 +62,7 @@ export class GuildService {
 	async OnlyThisModule_CreateDefaultRoleForGuild(GuildID: string) {
 		return await this.roleService.CreateEveryoneRoleForGuild({
 			RoleName: '@everyone',
-			guild: GuildID,
+			guildId: GuildID,
 			permissions: everyonePermissionDefault,
 			position: 1,
 		});

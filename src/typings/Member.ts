@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty } from 'class-validator';
-import { Guild } from '../model/Guild';
-import { Member } from '../model/Member';
+import { GuildEntity } from '../model/Guild';
+import { MemberEntity } from '../model/Member';
 import { BaseControllerResponse } from '.';
 
 export class JoinGuildInput {
@@ -22,22 +22,22 @@ export class JoinGuildResponse extends BaseControllerResponse {
 	})
 	Joined: boolean;
 	@ApiProperty()
-	guild: Guild;
+	guild: GuildEntity;
 	@ApiProperty()
-	member: Member;
+	member: MemberEntity;
 }
 
 export class LeaveGuildResponse extends BaseControllerResponse {
 	@ApiProperty()
-	guild: Guild;
+	guild: GuildEntity;
 	@ApiProperty()
-	member: Member;
+	member: MemberEntity;
 }
 
 export class GetMemberResponse extends BaseControllerResponse {
 	@ApiProperty({
-		type: () => Member,
+		// type: () => Member,
 		nullable: true,
 	})
-	member: Member | null;
+	member: MemberEntity | null;
 }

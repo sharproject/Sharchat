@@ -54,7 +54,7 @@ export class MemberController {
 
 		let member = await this.memberService.findMemberByUserIdAndGuildId(
 			res.locals.userId,
-			guild._id,
+			guild.id,
 		);
 
 		if (member && !member.removed) {
@@ -65,16 +65,15 @@ export class MemberController {
 				member,
 			};
 		} else if (member && member.removed) {
-			member.removed = !member.removed;
 			return {
 				message: 'Joined guild',
 				Joined: true,
 				guild,
-				member: await member.save(),
+				member: await this.memberService.setRemoved(member.id, !member.removed),
 			};
 		}
 		const everyoneRole = await this.memberService.findRoleById(
-			guild.everyoneRole._id,
+			guild.everyoneRoleId,
 		);
 		if (!everyoneRole) {
 			throw new HttpException(
@@ -85,13 +84,20 @@ export class MemberController {
 			);
 		}
 		member = await this.memberService.MemberUtilCreateMember(
-			guild._id,
+			guild.id,
 			res.locals.userId,
 			{
 				isOwner: false,
 			},
 		);
-
+		if (!member) {
+			throw new HttpException(
+				{
+					message: 'INTERNAL SERVER ERROR - to đùng',
+				},
+				HttpStatus.INTERNAL_SERVER_ERROR,
+			);
+		}
 		return {
 			message: 'Joined guild',
 			Joined: false,
@@ -131,7 +137,7 @@ export class MemberController {
 
 		let member = await this.memberService.findMemberByUserIdAndGuildId(
 			res.locals.userId,
-			guild._id,
+			guild.id,
 		);
 
 		if (!member) {
@@ -143,7 +149,7 @@ export class MemberController {
 			);
 		}
 
-		if (member.user._id == guild.owner._id) {
+		if (member.userId == guild.ownerID) {
 			throw new HttpException(
 				{
 					message:
@@ -154,7 +160,7 @@ export class MemberController {
 		}
 
 		member = await this.memberService.MemberUtilDeleteMember(
-			guild._id,
+			guild.id,
 			res.locals.userId,
 		);
 		guild = await this.memberService.findGuildById(id);

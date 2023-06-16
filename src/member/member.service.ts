@@ -1,12 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { MemberDocument } from '../model/Member';
+import { MemberEntity } from '../model/Member';
 import { UserService } from '../user/user.service';
 import permissions from 'src/configuration/permissions';
-import { RoleDocument } from 'src/model/Role';
 import { RoleService } from 'src/role/role.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma } from '@prisma/client';
-import { PermissionType } from 'src/model/Role';
+import { PermissionType } from '../typings';
 
 export interface CreateMemberOption {
 	isOwner: boolean;
@@ -15,9 +14,8 @@ export interface CreateMemberOption {
 @Injectable()
 export class MemberService {
 	constructor(
-		private readonly prismaService : PrismaService,
-
-		private readonly userService   : UserService,
+		private readonly userService: UserService,
+		private readonly prismaService: PrismaService,
 		private readonly roleService: RoleService,
 	) {}
 	async MemberUtilCreateMember(
@@ -37,7 +35,11 @@ export class MemberService {
 			throw new Error('User not found');
 		}
 
-		const guild = await this.prismaService.findById(guildId);
+		const guild = await this.prismaService.guild.findUnique({
+			where: {
+				id: guildId,
+			},
+		});
 		if (!guild) {
 			throw new Error('Guild not found');
 		}
@@ -53,16 +55,32 @@ export class MemberService {
 				...options,
 			},
 		});
-		const everyoneRole = await this.roleService.findRoleById(
-			guild.everyoneRole._id,
-		);
-		this.roleService.addMember
+
+		this.roleService.addMemberToRole(guild.everyoneRoleId, member.id);
+		await this.prismaService.guild.update({
+			where: {
+				id: guild.id,
+			},
+			data: {
+				members: {
+					connect: {
+						id: member.id,
+					},
+				},
+			},
+		});
 		await this.userService.UpdateUserGuild(user.id, guild.id);
-		return await member.save();
+		const returnMember = await this.prismaService.member.findUnique({
+			where: {
+				id: member.id,
+			},
+		});
+		if (!returnMember) throw new Error('Server Error');
+		return returnMember;
 	}
 	async findMemberById(id: string) {
 		return await this.prismaService.member.findUnique({
-			where : {
+			where: {
 				id: id,
 			},
 		});
@@ -71,6 +89,16 @@ export class MemberService {
 		return await this.prismaService.role.findMany({
 			where: {
 				guildId: guildId,
+			},
+		});
+	}
+	async setRemoved(id: string, removed: boolean) {
+		return await this.prismaService.member.update({
+			where: {
+				id,
+			},
+			data: {
+				removed,
 			},
 		});
 	}
@@ -85,26 +113,30 @@ export class MemberService {
 			throw new Error('User not found');
 		}
 
+    
 		const guild = await this.prismaService.guild.findUnique({
 			where: {
-				id : guildId
-			}
+				id: guildId,
+			},
 		});
 
 		if (!guild) {
 			throw new Error('Guild not found');
 		}
 
-		const member = await this.prismaService.member.create({
-			data: {
+		const member = await this.prismaService.member.findFirst({
+			where: {
 				userId: user.id,
-				guildId: guildId,
-
+				guildId: guild.id,
+			},
+			include: {
+				Role: true,
 			},
 		});
 
 		if (!member) {
-			throw new Error('Member not found');
+			// throw new Error('Member not found');
+			return null;
 		}
 
 		const permissionUtil = new PermissionUtilClass(member.isOwner);
@@ -114,10 +146,20 @@ export class MemberService {
 				if (
 					await permissionUtil.addRole(role_id, this.roleService.GetRoleModel())
 				) {
-					member.Role = member.Role.filter((id) => id._id != role_id);
+					await this.prismaService.member.update({
+						where: {
+							id: member.id,
+						},
+						data: {
+							Role: {
+								disconnect: {
+									id: role_id,
+								},
+							},
+						},
+					});
 				}
 			}
-			await member.save();
 		}
 		const result = {
 			permissions: permissionUtil,
@@ -127,12 +169,18 @@ export class MemberService {
 		return result;
 	}
 	async findGuildById(id: string) {
-		return await this.guildModel.findById(id);
+		return await this.prismaService.guild.findFirst({
+			where: {
+				id,
+			},
+		});
 	}
 	async findMemberByUserIdAndGuildId(userId: string, guildId: string) {
-		return await this.MemberModel.findOne({
-			user: userId,
-			guild: guildId,
+		return await this.prismaService.member.findFirst({
+			where: {
+				userId,
+				guildId,
+			},
 		});
 	}
 	async findRoleById(id: string) {
@@ -154,40 +202,74 @@ export class MemberService {
 		if (!user) {
 			throw new Error('User not found');
 		}
-		const member = await this.MemberModel.findOne({
-			userId: user.id,
-			guildId: guildId,
+		const member = await this.prismaService.member.findFirst({
+			where: {
+				userId: user.id,
+				guildId: guildId,
+			},
+			include: {
+				Role: true,
+			},
 		});
 		if (!member) {
 			throw new Error('Member not found');
 		}
 		if (!onlyMember) {
-			await this.guildModel.findByIdAndUpdate(guildId, {
-				$pull: {
-					members: member._id,
+			// await this.guildModel.findByIdAndUpdate(guildId, {
+			// 	$pull: {
+			// 		members: member._id,
+			// 	},
+			// });
+			await this.prismaService.guild.update({
+				data: {
+					members: {
+						disconnect: { id: member.id },
+					},
+				},
+				where: {
+					id: guildId,
 				},
 			});
 			for (const role of member.Role) {
-				await this.roleService.GetRoleModel().findByIdAndUpdate(role._id, {
-					$pull: {
-						member: member._id,
+				await this.roleService.GetRoleModel().update({
+					where: {
+						id: role.id,
+					},
+					data: {
+						member: {
+							disconnect: {
+								id: member.id,
+							},
+						},
 					},
 				});
 			}
 		}
 		await this.userService.DeleteGuildForUser(user.id, guildId);
 		if (guildDelete) {
-			await member.delete();
+			this.prismaService.member.delete({
+				where: {
+					id: member.id,
+				},
+			});
 		} else {
-			member.removed = true;
-			await member.save();
+			// member.removed = true;
+			// await member.save();
+			await this.prismaService.member.update({
+				where: {
+					id: member.id,
+				},
+				data: {
+					removed: true,
+				},
+			});
 		}
 
 		return member;
 	}
 }
 
-class PermissionUtilClass {
+export class PermissionUtilClass {
 	private permission: Array<keyof typeof permissions>;
 	metadata: {
 		ViewChannel: {
@@ -200,8 +282,10 @@ class PermissionUtilClass {
 		};
 	};
 	isOwner: boolean;
+	highestPosition: number;
 	constructor(isOwner: boolean) {
 		this.isOwner = isOwner;
+		this.highestPosition = 0;
 		if (isOwner) {
 			this.permission = Object.keys(permissions) as Array<
 				keyof typeof permissions
@@ -210,13 +294,26 @@ class PermissionUtilClass {
 			this.permission = [];
 		}
 	}
-	async addRole(roleId: string, RoleModel: Model<RoleDocument>) {
-		const role = await RoleModel.findById(roleId);
+	async addRole(
+		roleId: string,
+		RoleModel: Prisma.RoleDelegate<
+			Prisma.RejectOnNotFound | Prisma.RejectPerOperation | undefined
+		>,
+	) {
+		const role = await RoleModel.findUnique({
+			where: {
+				id: roleId,
+			},
+		});
 		if (!role) {
 			return true;
 		}
-		const permissions = role.permissions.map((i) => i.name);
-		for (const p of role.permissions) {
+		if (this.highestPosition < role.position) {
+			this.highestPosition = Number(role.position);
+		}
+		const rolePermissions = JSON.parse(role.permissions) as PermissionType[];
+		const permissions = rolePermissions.map((i) => i.name);
+		for (const p of rolePermissions) {
 			if (p.metadata) {
 				if (p.metadata.name == 'view_channel') {
 					this.metadata.ViewChannel.Block.push(...p.metadata.block_channel);
@@ -230,7 +327,7 @@ class PermissionUtilClass {
 		this.permission.push(...permissions);
 		return false;
 	}
-	canKickMember(another: MemberDocument) {
+	canKickMember(another: MemberEntity) {
 		another.Role;
 		return this.permission.includes('kick_member');
 	}
@@ -256,6 +353,31 @@ class PermissionUtilClass {
 		return (
 			this.permission.includes('channel_manager') &&
 			!this.metadata.ViewChannel.Block.includes(channelID)
+		);
+	}
+
+	couldCreateRole(position: number) {
+		return (
+			this.permission.includes('role_manager') &&
+			this.highestPosition > position
+		);
+	}
+	couldEditRole(position: number) {
+		return (
+			this.permission.includes('role_manager') &&
+			this.highestPosition > position
+		);
+	}
+	couldDeleteRole(position: number) {
+		return (
+			this.permission.includes('role_manager') &&
+			this.highestPosition > position
+		);
+	}
+	couldAddOrRemoveRoleForMember(position: number) {
+		return (
+			this.permission.includes('role_manager') &&
+			this.highestPosition > position
 		);
 	}
 }

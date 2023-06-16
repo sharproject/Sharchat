@@ -1,4 +1,4 @@
-import { PermissionType } from '../model/Role';
+import { PermissionType } from 'src/typings';
 
 const permissions = {
 	admin: 'Server Administrator',
@@ -8,6 +8,7 @@ const permissions = {
 	view_channel: 'View Channel',
 	send_message: 'Send Message To Channel',
 	channel_manager: 'Channel Manager',
+	role_manager: 'Role Manager',
 };
 
 export const everyonePermissionDefault: Array<PermissionType> = [
