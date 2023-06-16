@@ -70,17 +70,17 @@ export class GuildController {
 			);
 
 		/*guild.role.push(EveryOneRole);*/
-		this.prismaService.guild.findUnique({
+		this.prismaService.guild.update({
 			where: {
 				id: guild.id,
 			},
-			select: {
-				role: {
-					select: {
-						guild: Role.push(EveryOneRole),
-					},
-				},
-			},
+			data : {
+				role : {
+					connect : {
+						id : EveryOneRole.id
+					}
+				}
+			}
 		});
 
 		//======================================================
@@ -106,9 +106,16 @@ export class GuildController {
 			},
 		);
 		res.status(HttpStatus.CREATED);
+		const returnGuild = this.guildService.findGuildById(guild.id)
+		if (!returnGuild) throw new HttpException(
+			{
+				message : 'Server error',
+			},
+			HttpStatus.INTERNAL_SERVER_ERROR,
+		)
 		return {
 			message: 'Guild created',
-			guild: await guild.save(),
+			guild: returnGuild,
 			member,
 		};
 	}
