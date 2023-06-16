@@ -38,9 +38,9 @@ export class MemberModule implements NestModule {
 			module: MemberModule,
 			providers: [MemberService],
 			imports: [
-				
 				UserModule.GetUserModule(),
 				RoleModule.GetRoleModule(),
+				PrismaModule
 			],
 			exports: [MemberService],
 		};

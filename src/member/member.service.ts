@@ -3,7 +3,7 @@ import { MemberEntity } from '../model/Member';
 import { UserService } from '../user/user.service';
 import permissions from 'src/configuration/permissions';
 import { RoleService } from 'src/role/role.service';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 import { PermissionType } from '../typings';
 
@@ -55,6 +55,7 @@ export class MemberService {
 				...options,
 			},
 		});
+
 		this.roleService.addMemberToRole(guild.everyoneRoleId, member.id);
 		await this.prismaService.guild.update({
 			where: {
@@ -112,7 +113,8 @@ export class MemberService {
 			throw new Error('User not found');
 		}
 
-		const guild = await this.prismaService.guild.findFirst({
+    
+		const guild = await this.prismaService.guild.findUnique({
 			where: {
 				id: guildId,
 			},
