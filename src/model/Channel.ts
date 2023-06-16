@@ -28,10 +28,10 @@ export class ChannelEntity implements Channel {
 	@ApiProperty({
 		type: () => GuildEntity,
 	})
-	public guild: GuildEntity;
+	public guild?: GuildEntity;
 
 	@ApiProperty({
 		type: () => [MessageEntity],
 	})
-	public message: MessageEntity[];
+	public message?: MessageEntity[];
 }

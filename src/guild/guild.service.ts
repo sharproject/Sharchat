@@ -6,7 +6,6 @@ import { UserService } from 'src/user/user.service';
 import { CreateGuildInput } from '../typings/Guild';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { GuildModule } from './guild.module';
-import { Guild } from 'src/model/Guild';
 import { StringDecoder } from 'string_decoder';
 import { stringify } from 'querystring';
 import { isStringObject } from 'util/types';
@@ -15,37 +14,50 @@ import { userInfo } from 'os';
 import { identity } from 'rxjs';
 import { StringArraySupportOption } from 'prettier';
 
-
-
 @Injectable()
 export class GuildService {
 	constructor(
-		public readonly prismaService : PrismaService,
+		public readonly prismaService: PrismaService,
 		public readonly memberService: MemberService,
 		public readonly roleService: RoleService,
 		public readonly userService: UserService,
 	) {}
 	async CreateNewGuildForRoute(
-	{ name, description = ''}: CreateGuildInput,
+		{ name, description = '' }: CreateGuildInput,
 		owner: string,
 	) {
 		const ownerObj = await this.userService.findUserByID(owner);
-		if (!ownerObj) throw new Error("error cmnr");
+		if (!ownerObj) throw new Error('error cmnr');
 		return await this.prismaService.guild.create({
-			data : {
-				name : name,			
-				description : description ,			
-				owner : {
+			data: {
+				name: name,
+				description: description,
+				owner: {
 					connect: {
-						id : ownerObj.id
-					}
+						id: ownerObj.id,
+					},
 				},
-				everyoneRoleId : ''
+				everyoneRoleId: '',
 			},
 		});
 	}
-	async findGuildById(id: string) {
-		return await this.prismaService.findById(id);
+	async findGuildById<
+		T extends {
+			owner?: boolean;
+			members?: boolean;
+			channels?: boolean;
+			roles?: boolean;
+			_count?: boolean;
+		},
+	>(id: string, include?: T) {
+		return await this.prismaService.guild.findUnique({
+			where: {
+				id,
+			},
+			include: {
+				...include,
+			},
+		});
 	}
 
 	async OnlyThisModule_CreateMember(
@@ -65,6 +77,25 @@ export class GuildService {
 			guildId: GuildID,
 			permissions: everyonePermissionDefault,
 			position: 1,
+		});
+	}
+	async DeleteGuild(id: string) {
+		return await this.prismaService.guild.delete({
+			where: {
+				id,
+			},
+		});
+	}
+	async UpdateGuildInfo(
+		input: {
+			name: string;
+			description: string;
+		},
+		id: string,
+	) {
+		return await this.prismaService.guild.update({
+			where: { id },
+			data: { ...input },
 		});
 	}
 }

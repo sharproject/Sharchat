@@ -23,8 +23,6 @@ import {
 	EditGuildResponse,
 } from '../typings/Guild';
 import { AuthTag } from '../constant';
-import { Role } from 'src/model/Role';
-import { connect } from 'http2';
 
 @ApiTags('guild', AuthTag)
 @ApiBearerAuth()
@@ -74,13 +72,13 @@ export class GuildController {
 			where: {
 				id: guild.id,
 			},
-			data : {
-				role : {
-					connect : {
-						id : EveryOneRole.id
-					}
-				}
-			}
+			data: {
+				roles: {
+					connect: {
+						id: EveryOneRole.id,
+					},
+				},
+			},
 		});
 
 		//======================================================
@@ -106,13 +104,14 @@ export class GuildController {
 			},
 		);
 		res.status(HttpStatus.CREATED);
-		const returnGuild = this.guildService.findGuildById(guild.id)
-		if (!returnGuild) throw new HttpException(
-			{
-				message : 'Server error',
-			},
-			HttpStatus.INTERNAL_SERVER_ERROR,
-		)
+		const returnGuild = await this.guildService.findGuildById(guild.id);
+		if (!returnGuild)
+			throw new HttpException(
+				{
+					message: 'Server error',
+				},
+				HttpStatus.INTERNAL_SERVER_ERROR,
+			);
 		return {
 			message: 'Guild created',
 			guild: returnGuild,
@@ -131,7 +130,9 @@ export class GuildController {
 	): Promise<DeleteGuildResponse> {
 		const { id } = input;
 
-		const guild = await this.guildService.findGuildById(id);
+		const guild = await this.guildService.findGuildById(id, {
+			members: true,
+		});
 		if (!guild) {
 			throw new HttpException(
 				{
@@ -143,7 +144,7 @@ export class GuildController {
 		const result =
 			await this.guildService.memberService.MemberUtilCheckPermission(
 				res.locals.userId,
-				guild._id,
+				guild.id,
 			);
 		if (!result) {
 			throw new HttpException(
@@ -163,29 +164,29 @@ export class GuildController {
 		}
 
 		try {
-			for (const member of guild.members) {
-				this.guildService.memberService.MemberUtilDeleteMember(
-					member.guild._id,
-					member.user._id,
-					true,
-					true,
-				);
-			}
+			if (guild.members)
+				for (const member of guild.members) {
+					this.guildService.memberService.MemberUtilDeleteMember(
+						member.guildId,
+						member.userId,
+						true,
+						true,
+					);
+				}
 		} catch (err) {
 			console.log(err);
 		}
 
 		try {
-			await this.guildService.roleService.deleteAllGuildRole(guild._id);
-
+			await this.guildService.roleService.deleteAllGuildRole(guild.id);
 		} catch (err) {
 			console.log(err);
 		}
 		await this.guildService.userService.DeleteGuildForUser(
 			res.locals.userId,
-			guild._id,
+			guild.id,
 		);
-		await guild.delete();
+		await this.guildService.DeleteGuild(guild.id);
 		return {
 			message: 'Guild deleted',
 			guild,
@@ -223,7 +224,7 @@ export class GuildController {
 		const result =
 			await this.guildService.memberService.MemberUtilCheckPermission(
 				res.locals.userId,
-				guild._id,
+				guild.id,
 			);
 		if (!result) {
 			throw new HttpException(
@@ -246,16 +247,29 @@ export class GuildController {
 			(name && typeof name == 'string') ||
 			(description && typeof description == 'string')
 		) {
-			if (name && typeof name == 'string') guild.name = name;
+			const updateData = {
+				name: guild.name,
+				description: guild.description,
+			};
+			if (name && typeof name == 'string') updateData.name = name;
 			if (description && typeof description == 'string')
-				guild.description = description;
+				updateData.description = description;
 
-			await guild.save();
+			await this.guildService.UpdateGuildInfo(updateData, guild.id);
 		}
+
+		const returnGuild = await this.guildService.findGuildById(guild.id);
+		if (!returnGuild)
+			throw new HttpException(
+				{
+					message: 'Server error',
+				},
+				HttpStatus.INTERNAL_SERVER_ERROR,
+			);
 
 		return {
 			message: 'Guild edited',
-			guild,
+			guild: returnGuild,
 		};
 	}
 }
