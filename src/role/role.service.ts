@@ -140,4 +140,35 @@ export class RoleService {
 			});
 		});
 	}
+	async AddMember(memberId: string, roleId: string) {
+		return this.prismaService.role.update({
+			where: {
+				id: roleId,
+			},
+			data: {
+				member: {
+					connect: {
+						id: memberId,
+					},
+				},
+			},
+		});
+	}
+	async findMemberById(id: string) {
+		return this.memberService.findMemberById(id);
+	}
+	async RemoveMember(memberId: string, roleId: string) {
+		return this.prismaService.role.update({
+			where: {
+				id: roleId,
+			},
+			data: {
+				member: {
+					disconnect: {
+						id: memberId,
+					},
+				},
+			},
+		});
+	}
 }

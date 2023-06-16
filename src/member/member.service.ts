@@ -372,4 +372,10 @@ export class PermissionUtilClass {
 			this.highestPosition > position
 		);
 	}
+	couldAddOrRemoveRoleForMember(position: number) {
+		return (
+			this.permission.includes('role_manager') &&
+			this.highestPosition > position
+		);
+	}
 }

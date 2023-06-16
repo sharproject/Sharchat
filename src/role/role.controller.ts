@@ -190,7 +190,117 @@ export class RoleController {
 				HttpStatus.BAD_REQUEST,
 			);
 		}
-		
+
 		return await this.roleService.DeleteRole(id);
+	}
+
+	@Patch('/add/role/:roleId/:memberId')
+	@ApiResponse({
+		status: HttpStatus.OK,
+		type: RoleEntity,
+	})
+	async AddRoleForMember(
+		@Param('roleId') id: string,
+		@Param('memberId') memberID: string,
+		@Res() res: Response,
+	): Promise<RoleEntity> {
+		const targetRole = await this.roleService.findRoleById(id);
+		if (!targetRole) {
+			throw new HttpException(
+				{
+					message: 'role not found',
+				},
+				HttpStatus.NOT_FOUND,
+			);
+		}
+		const targetMember = await this.roleService.findMemberById(memberID);
+		if (!targetMember) {
+			throw new HttpException(
+				{
+					message: 'member not found',
+				},
+				HttpStatus.NOT_FOUND,
+			);
+		}
+		const changerPermission = await this.roleService.getMemberPermission(
+			targetRole.guildId,
+			res.locals.userId,
+		);
+		if (!changerPermission) {
+			throw new HttpException(
+				{
+					message: 'Server Error',
+				},
+				HttpStatus.INTERNAL_SERVER_ERROR,
+			);
+		}
+		if (
+			!changerPermission.permissions.couldAddOrRemoveRoleForMember(
+				targetRole.position,
+			)
+		) {
+			throw new HttpException(
+				{
+					message: 'your highest role lower than target role',
+				},
+				HttpStatus.BAD_REQUEST,
+			);
+		}
+		return this.roleService.AddMember(targetMember.id, targetRole.id);
+	}
+
+	@Patch('/remove/role/:roleId/:memberId')
+	@ApiResponse({
+		status: HttpStatus.OK,
+		type: RoleEntity,
+	})
+	async RemoveRoleForMember(
+		@Param('roleId') id: string,
+		@Param('memberId') memberID: string,
+		@Res() res: Response,
+	): Promise<RoleEntity> {
+		const targetRole = await this.roleService.findRoleById(id);
+		if (!targetRole) {
+			throw new HttpException(
+				{
+					message: 'role not found',
+				},
+				HttpStatus.NOT_FOUND,
+			);
+		}
+		const targetMember = await this.roleService.findMemberById(memberID);
+		if (!targetMember) {
+			throw new HttpException(
+				{
+					message: 'member not found',
+				},
+				HttpStatus.NOT_FOUND,
+			);
+		}
+		const changerPermission = await this.roleService.getMemberPermission(
+			targetRole.guildId,
+			res.locals.userId,
+		);
+		if (!changerPermission) {
+			throw new HttpException(
+				{
+					message: 'Server Error',
+				},
+				HttpStatus.INTERNAL_SERVER_ERROR,
+			);
+		}
+		if (
+			!changerPermission.permissions.couldAddOrRemoveRoleForMember(
+				targetRole.position,
+			)
+		) {
+			throw new HttpException(
+				{
+					message: 'your highest role lower than target role',
+				},
+				HttpStatus.BAD_REQUEST,
+			);
+		}
+		return this.roleService.RemoveMember(targetMember.id, targetRole.id);
 	}
 }
