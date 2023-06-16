@@ -26,7 +26,6 @@ import { AuthTag } from '../constant';
 import { Role } from 'src/model/Role';
 import { connect } from 'http2';
 
-
 @ApiTags('guild', AuthTag)
 @ApiBearerAuth()
 @Controller('guild')
@@ -34,9 +33,9 @@ export class GuildController {
 	constructor(
 		private readonly guildService: GuildService,
 		private readonly guildModel: GuildModule,
-		
+
 		private readonly prismaService: PrismaService,
-		) {}
+	) {}
 
 	@ApiResponse({
 		status: HttpStatus.CREATED,
@@ -69,36 +68,36 @@ export class GuildController {
 			await this.guildService.OnlyThisModule_CreateDefaultRoleForGuild(
 				guild.id,
 			);
-		/*guild.everyoneRoleId = EveryOneRole;*/
-		
+
 		/*guild.role.push(EveryOneRole);*/
 		this.prismaService.guild.findUnique({
-			where : {
-				id: guild.id
+			where: {
+				id: guild.id,
 			},
-			select : {
-				role : {
+			select: {
+				role: {
 					select: {
-						guild : Role.push(EveryOneRole)
+						guild: Role.push(EveryOneRole),
 					},
-				}
+				},
 			},
 		});
 
-	//======================================================
+		//======================================================
 
+		/*guild.everyoneRoleId = EveryOneRole;*/
 		//after
 		await this.prismaService.guild.update({
 			where: {
 				id: guild.id,
 			},
 			data: {
- 				everyoneRoleId = EveryOneRole
+				everyoneRoleId: EveryOneRole.id,
 			},
 		});
 
-	//======================================================
-	
+		//======================================================
+
 		const member = await this.guildService.OnlyThisModule_CreateMember(
 			guild.id,
 			res.locals.userId,
@@ -112,7 +111,7 @@ export class GuildController {
 			guild: await guild.save(),
 			member,
 		};
-	} 
+	}
 
 	@ApiResponse({
 		status: HttpStatus.OK,
@@ -162,9 +161,9 @@ export class GuildController {
 		}
 
 		try {
-			(
-				await this.guildService.roleService.findRoleInGuild(guild._id)
-			).map((d) => d.delete());
+			(await this.guildService.roleService.findRoleInGuild(guild._id)).map(
+				(d) => d.delete(),
+			);
 		} catch (err) {
 			console.log(err);
 		}
