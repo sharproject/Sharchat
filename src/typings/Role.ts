@@ -1,11 +1,11 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
 import {
 	IsHexColor,
 	IsNotEmpty,
 	IsMongoId,
 	IsBoolean,
 	IsNumber,
-	IsObject,
+	IsArray,
 } from 'class-validator';
 import { PermissionType } from './Util';
 
@@ -22,7 +22,7 @@ export class CreateRoleInput {
 	@ApiProperty()
 	@IsNotEmpty()
 	@IsHexColor()
-	color: string;
+	color?: string;
 
 	@ApiProperty()
 	@IsBoolean()
@@ -33,5 +33,17 @@ export class CreateRoleInput {
 	position?: number;
 
 	@ApiProperty()
-	permission: PermissionType[];
+	@IsArray()
+	permissions?: PermissionType[];
+}
+
+export class UpdateRoleInput extends OmitType(PartialType(CreateRoleInput), [
+	'guildId',
+]) {
+	@ApiProperty({
+		description:
+			'THIS FIELD WILL BE CHANGE BY SET PERMISSION WRITE ALL PERMISSION YOU WANT',
+	})
+	@IsArray()
+	permissions: PermissionType[];
 }

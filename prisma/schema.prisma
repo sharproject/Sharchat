@@ -3,6 +3,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  // previewFeatures = ["interactiveTransactions"]
 }
 
 datasource db {
@@ -28,7 +29,7 @@ model Guild {
   updatedAt      DateTime  @updatedAt
   name           String
   description    String
-  owner          User      @relation(fields: [ownerID], references: [id])
+  owner          User      @relation(fields: [ownerID], references: [id], onDelete: Cascade)
   members        Member[]
   channels       Channel[]
   roles          Role[]
@@ -40,12 +41,12 @@ model Member {
   id        String    @id @default(uuid())
   joinedAt  DateTime  @default(now())
   updatedAt DateTime  @updatedAt()
-  user      User      @relation(fields: [userId], references: [id])
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   // guild Guild[]
   // Role 
   isOwner   Boolean   @default(false)
   removed   Boolean   @default(false)
-  Guild     Guild     @relation(fields: [guildId], references: [id])
+  Guild     Guild     @relation(fields: [guildId], references: [id], onDelete: Cascade)
   guildId   String
   Message   Message[]
   Role      Role[]
@@ -68,9 +69,9 @@ model Message {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt()
-  User      User     @relation(fields: [userId], references: [id])
-  Channel   Channel  @relation(fields: [channelId], references: [id])
-  member    Member   @relation(fields: [memberId], references: [id])
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Channel   Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  member    Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
   userId    String
   channelId String
   memberId  String
@@ -81,7 +82,7 @@ model Role {
   id          String   @id @default(uuid())
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt()
-  guild       Guild    @relation(fields: [guildId], references: [id])
+  guild       Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
   hide        Boolean  @default(false)
   position    Int      @default(1)
   member      Member[]

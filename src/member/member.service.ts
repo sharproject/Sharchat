@@ -360,4 +360,16 @@ export class PermissionUtilClass {
 			this.highestPosition > position
 		);
 	}
+	couldEditRole(position: number) {
+		return (
+			this.permission.includes('role_manager') &&
+			this.highestPosition > position
+		);
+	}
+	couldDeleteRole(position: number) {
+		return (
+			this.permission.includes('role_manager') &&
+			this.highestPosition > position
+		);
+	}
 }

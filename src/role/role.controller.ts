@@ -3,8 +3,8 @@ import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RoleService } from './role.service';
 import { Response } from 'express';
 import { AuthTag } from '../constant';
-import { Body, Res } from '@nestjs/common/decorators';
-import { CreateRoleInput } from '../typings';
+import { Body, Delete, Param, Patch, Res } from '@nestjs/common/decorators';
+import { CreateRoleInput, UpdateRoleInput } from '../typings';
 import { everyonePermissionDefault } from '../configuration/permissions';
 import { RoleEntity } from '../model/Role';
 
@@ -76,7 +76,121 @@ export class RoleController {
 			hideInNav: input.hide,
 			color: input.color,
 			position: rolePosition,
-			permissions: input.permission || everyonePermissionDefault,
+			permissions: input.permissions || everyonePermissionDefault,
 		});
+	}
+
+	@Patch('/edit/:id')
+	@ApiResponse({
+		status: HttpStatus.OK,
+		type: RoleEntity,
+	})
+	async EditRoleInfo(
+		@Param('id') id: string,
+		@Body() input: UpdateRoleInput,
+		@Res() res: Response,
+	): Promise<RoleEntity> {
+		const targetRole = await this.roleService.findRoleById(id);
+		if (!targetRole) {
+			throw new HttpException(
+				{
+					message: 'role not found',
+				},
+				HttpStatus.NOT_FOUND,
+			);
+		}
+		const changerPermission = await this.roleService.getMemberPermission(
+			targetRole.guildId,
+			res.locals.userId,
+		);
+		if (!changerPermission) {
+			throw new HttpException(
+				{
+					message: 'Server Error',
+				},
+				HttpStatus.INTERNAL_SERVER_ERROR,
+			);
+		}
+		if (!changerPermission.permissions.couldEditRole(targetRole.position)) {
+			throw new HttpException(
+				{
+					message: 'your highest role lower than target role',
+				},
+				HttpStatus.BAD_REQUEST,
+			);
+		}
+		const IsPermissionChangeError = async () => {
+			if (input.permissions) {
+				/**
+				 * should check if
+				 * ✅ changer is the owner break
+				 * if changer have this role
+				 * ❌ if this is the remove role permission action ( query in database and then compare 2 permission (oldTargetRolePermission,newTargetRolePermission))
+				 * check role of changer have same permission of remove role if true break // user continute have this permission if remove
+				 * if nop throw error like : you couldn't do this action your permission will lost
+				 *
+				 * ❌ if add new permission (check like remove role permission):
+				 * check if changer permission have that permission
+				 * else break
+				 *
+				 * note : could edit PermissionUtilClass thank because read and make this
+				 */
+				if (changerPermission?.isOwner) {
+					return false;
+				}
+			}
+		};
+		if (await IsPermissionChangeError()) {
+			throw new HttpException(
+				{
+					message:
+						'you cannot do this action your permission will lost or your permission dont enough',
+				},
+				HttpStatus.BAD_REQUEST,
+			);
+		}
+		return await this.roleService.UpdateRole(id, input);
+	}
+
+	@Delete('/delete/:id')
+	@ApiResponse({
+		status: HttpStatus.OK,
+		type: RoleEntity,
+	})
+	async DeleteRole(
+		@Param('id') id: string,
+		@Res() res: Response,
+	): Promise<RoleEntity> {
+		const targetRole = await this.roleService.findRoleById(id);
+		if (!targetRole) {
+			throw new HttpException(
+				{
+					message: 'role not found',
+				},
+				HttpStatus.NOT_FOUND,
+			);
+		}
+		const changerPermission = await this.roleService.getMemberPermission(
+			targetRole.guildId,
+			res.locals.userId,
+		);
+		if (!changerPermission) {
+			throw new HttpException(
+				{
+					message: 'Server Error',
+				},
+				HttpStatus.INTERNAL_SERVER_ERROR,
+			);
+		}
+		if (!changerPermission.permissions.couldDeleteRole(targetRole.position)) {
+			throw new HttpException(
+				{
+					message: 'your highest role lower than target role',
+				},
+				HttpStatus.BAD_REQUEST,
+			);
+		}
+		
+		return await this.roleService.DeleteRole(id);
 	}
 }

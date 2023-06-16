@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { PermissionType } from '../typings';
+import { PermissionType, UpdateRoleInput } from '../typings';
 import { MemberService } from '../member/member.service';
 
 @Injectable()
@@ -74,7 +74,7 @@ export class RoleService {
 		permissions?: PermissionType[];
 		position: number;
 		hideInNav: boolean;
-		color: string;
+		color?: string;
 	}) {
 		return await this.prismaService.role.create({
 			data: {
@@ -93,5 +93,51 @@ export class RoleService {
 	}
 	async getMemberPermission(guildId: string, userId: string) {
 		return await this.memberService.MemberUtilCheckPermission(userId, guildId);
+	}
+	async UpdateRole(roleID: string, input: UpdateRoleInput) {
+		return await this.prismaService.role.update({
+			where: {
+				id: roleID,
+			},
+			data: {
+				...input,
+				permissions: JSON.stringify(input.permissions || []),
+			},
+		});
+	}
+	async DeleteRole(id: string) {
+		// pull role out of guild and member then remove role
+		return await this.prismaService.$transaction(async (prisma) => {
+			const targetRole = await prisma.role.findUnique({
+				where: {
+					id,
+				},
+			});
+			if (!targetRole) {
+				throw new HttpException(
+					{
+						message: 'target role not found',
+					},
+					HttpStatus.NOT_FOUND,
+				);
+			}
+			prisma.guild.update({
+				where: {
+					id: targetRole.guildId,
+				},
+				data: {
+					roles: {
+						disconnect: {
+							id,
+						},
+					},
+				},
+			});
+			return await prisma.role.delete({
+				where: {
+					id,
+				},
+			});
+		});
 	}
 }
