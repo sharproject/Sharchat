@@ -102,6 +102,14 @@ export class GuildController {
 				res.locals.userId,
 				guild._id,
 			);
+		if (!result) {
+			throw new HttpException(
+				{
+					message: 'Requested user is not in the guild',
+				},
+				HttpStatus.FORBIDDEN,
+			);
+		}
 		if (!result.isOwner) {
 			throw new HttpException(
 				{
@@ -125,9 +133,7 @@ export class GuildController {
 		}
 
 		try {
-			(
-				await this.guildService.roleService.findRoleInGuild(guild._id)
-			).map((d) => d.delete());
+			await this.guildService.roleService.deleteAllGuildRole(guild._id);
 		} catch (err) {
 			console.log(err);
 		}
@@ -175,6 +181,14 @@ export class GuildController {
 				res.locals.userId,
 				guild._id,
 			);
+		if (!result) {
+			throw new HttpException(
+				{
+					message: 'Requested user is not in the guild',
+				},
+				HttpStatus.FORBIDDEN,
+			);
+		}
 		if (!result.permissions.canEditGuild()) {
 			throw new HttpException(
 				{

@@ -20,15 +20,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 			},
 		]),
 	],
-	exports: [
-		MongooseModule.forFeature([
-			{
-				name: Session.name,
-				schema: SessionSchema,
-			},
-		]),
-		AuthenticationService,
-	],
+	exports: [AuthenticationService],
 })
 export class AuthenticationModule implements NestModule {
 	constructor(private _authService: AuthenticationService) {}

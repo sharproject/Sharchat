@@ -10,7 +10,7 @@ import { AuthenticationModule } from '../Authentication/authentication.module';
 import { AuthenticationMiddleware } from '../Authentication/authentication.middleware';
 import { AuthenticationService } from 'src/Authentication/authentication.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Guild, GuildSchema } from 'src/model/Guild';
+import { GuildEntity } from 'src/model/Guild';
 import { MemberModule } from '../member/member.module';
 import { RoleModule } from '../role/role.module';
 import { UserModule } from 'src/user/user.module';
@@ -20,8 +20,8 @@ import { GuildNotAuthController } from './guild.not_auth.controller';
 	imports: [
 		MongooseModule.forFeature([
 			{
-				name: Guild.name,
-				schema: GuildSchema,
+				name: GuildEntity.name,
+				schema: GuildEntity,
 			},
 		]),
 		AuthenticationModule.GetAuthUtil(),
@@ -47,8 +47,8 @@ export class GuildModule implements NestModule {
 			imports: [
 				MongooseModule.forFeature([
 					{
-						name: Guild.name,
-						schema: GuildSchema,
+						name: GuildEntity.name,
+						schema: GuildEntity,
 					},
 				]),
 				AuthenticationModule.GetAuthUtil(),

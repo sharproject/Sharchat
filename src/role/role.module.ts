@@ -6,32 +6,17 @@ import {
 } from '@nestjs/common';
 import { RoleService } from './role.service';
 import { RoleController } from './role.controller';
-import { MongooseModule } from '@nestjs/mongoose';
-import { Role, RoleSchema } from '../model/Role';
 import { AuthenticationMiddleware } from '../Authentication/authentication.middleware';
 import { AuthenticationModule } from '../Authentication/authentication.module';
 import { AuthenticationService } from '../Authentication/authentication.service';
 import { RoleNotAuthController } from './role.not_auth.controller';
-import { Guild, GuildSchema } from '../model/Guild';
+import { PrismaModule } from '../prisma/prisma.module';
+import { MemberModule } from '../member/member.module';
 
 @Module({
 	providers: [RoleService],
 	controllers: [RoleController, RoleNotAuthController],
-	imports: [
-		MongooseModule.forFeature([
-			{
-				name: Guild.name,
-				schema: GuildSchema,
-			},
-		]),
-		AuthenticationModule,
-		MongooseModule.forFeature([
-			{
-				name: Role.name,
-				schema: RoleSchema,
-			},
-		]),
-	],
+	imports: [AuthenticationModule, PrismaModule, MemberModule.GetMemberModel()],
 	exports: [RoleService],
 })
 export class RoleModule implements NestModule {
@@ -46,14 +31,7 @@ export class RoleModule implements NestModule {
 		return {
 			module: RoleModule,
 			providers: [RoleService],
-			imports: [
-				MongooseModule.forFeature([
-					{
-						name: Role.name,
-						schema: RoleSchema,
-					},
-				]),
-			],
+			imports: [PrismaModule],
 			exports: [RoleService],
 		};
 	}
