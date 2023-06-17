@@ -12,6 +12,7 @@ import {
 	UserInfoControllerReturn,
 } from '../typings';
 import { NotAuthTag } from '../constant';
+import { Response } from 'express';
 
 @ApiTags('user', NotAuthTag)
 @Controller('user')
@@ -30,6 +31,7 @@ export class UserController {
 	@Post('register')
 	async RegisterUser(
 		@Body() registerData: RegisterUserInput,
+		@Res() res: Response,
 	): Promise<UserLoginRegisterControllerReturn> {
 		const { email, password, username } = registerData;
 
@@ -50,9 +52,11 @@ export class UserController {
 			email,
 			password: hashPassword,
 		});
+		const token = await this.AuthService.GenToken(user.id);
+		res.cookie('authorization', token);
 		return {
 			message: 'User created successfully',
-			token: await this.AuthService.GenToken(user.id),
+			token,
 			user,
 		};
 	}
@@ -66,6 +70,7 @@ export class UserController {
 	@Post('login')
 	async UserLogin(
 		@Body() input: LoginUserInput,
+		@Res() res: Response,
 	): Promise<UserLoginRegisterControllerReturn> {
 		const { emailOrUsername, password } = input;
 
@@ -89,9 +94,11 @@ export class UserController {
 				HttpStatus.BAD_REQUEST,
 			);
 		}
+		const token = await this.AuthService.GenToken(user.id);
+		res.cookie('authorization', token);
 		return {
 			message: 'Login successfully',
-			token: await this.AuthService.GenToken(user.id),
+			token,
 			user,
 		};
 	}

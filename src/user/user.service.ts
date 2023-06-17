@@ -5,44 +5,32 @@ import { PrismaService } from 'src/prisma/prisma.service';
 @Injectable()
 export class UserService {
 	constructor(private prisma: PrismaService) {}
-	async findUserByEmail(
-		email: string,
-		include?: {
-			guilds?: boolean;
-			Message?: boolean;
-		},
-	) {
+	async findUserByEmail(email: string) {
 		return await this.prisma.user.findFirst({
 			where: { email: email },
-			include,
+			include: {
+				guilds: true,
+			},
 		});
 	}
-	async findUserByUsername(
-		username: string,
-		include?: {
-			guilds?: boolean;
-			Message?: boolean;
-		},
-	) {
+	async findUserByUsername(username: string) {
 		return await this.prisma.user.findFirst({
 			where: { username: username },
-			include,
+			include: {
+				guilds: true,
+			},
 		});
 	}
-	async CreateNewUser(
-		{ email, password, username }: RegisterUserInput,
-		include?: {
-			guilds?: boolean;
-			Message?: boolean;
-		},
-	) {
+	async CreateNewUser({ email, password, username }: RegisterUserInput) {
 		return await this.prisma.user.create({
 			data: {
 				email,
 				password,
 				username,
 			},
-			include,
+			include: {
+				guilds: true,
+			},
 		});
 	}
 

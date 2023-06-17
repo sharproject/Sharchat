@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { MemberEntity } from '../model/Member';
 import { UserService } from '../user/user.service';
 import permissions from 'src/configuration/permissions';
-import { RoleService } from 'src/role/role.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 import { PermissionType } from '../typings';
@@ -16,8 +15,8 @@ export class MemberService {
 	constructor(
 		private readonly userService: UserService,
 		private readonly prismaService: PrismaService,
-		private readonly roleService: RoleService,
-	) {}
+	) 
+	{}
 	async MemberUtilCreateMember(
 		guildId: string | undefined,
 		userId: string | undefined,
@@ -56,7 +55,19 @@ export class MemberService {
 			},
 		});
 
-		this.roleService.addMemberToRole(guild.everyoneRoleId, member.id);
+		// this.roleService.addMemberToRole(guild.everyoneRoleId, member.id);
+		this.prismaService.role.update({
+			where: {
+				id: guild.everyoneRoleId,
+			},
+			data: {
+				member: {
+					connect: {
+						id: member.id,
+					},
+				},
+			},
+		});
 		await this.prismaService.guild.update({
 			where: {
 				id: guild.id,
@@ -113,7 +124,6 @@ export class MemberService {
 			throw new Error('User not found');
 		}
 
-    
 		const guild = await this.prismaService.guild.findUnique({
 			where: {
 				id: guildId,
@@ -143,9 +153,7 @@ export class MemberService {
 
 		if (!member.isOwner) {
 			for (const role_id in member.Role) {
-				if (
-					await permissionUtil.addRole(role_id, this.roleService.GetRoleModel())
-				) {
+				if (await permissionUtil.addRole(role_id, this.prismaService.role)) {
 					await this.prismaService.member.update({
 						where: {
 							id: member.id,
@@ -184,7 +192,11 @@ export class MemberService {
 		});
 	}
 	async findRoleById(id: string) {
-		return this.roleService.findRoleById(id);
+		return await this.prismaService.guild.findUnique({
+			where: {
+				id,
+			},
+		});
 	}
 	async MemberUtilDeleteMember(
 		guildId: string | undefined,
@@ -231,7 +243,7 @@ export class MemberService {
 				},
 			});
 			for (const role of member.Role) {
-				await this.roleService.GetRoleModel().update({
+				await this.prismaService.role.update({
 					where: {
 						id: role.id,
 					},

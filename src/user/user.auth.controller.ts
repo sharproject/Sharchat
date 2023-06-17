@@ -17,7 +17,7 @@ import { UserInfoControllerReturn } from 'src/typings';
 import { AuthTag } from '../constant';
 
 @ApiTags('user', AuthTag)
-@ApiBearerAuth()
+@ApiBearerAuth('authorization')
 @Controller('auth')
 export class UserAuthController {
 	constructor(private readonly userService: UserService) {}
@@ -35,6 +35,7 @@ export class UserAuthController {
 	): Promise<UserInfoControllerReturn> {
 		const UserInfo = await this.userService.findUserByID(
 			String(res.locals.userId),
+			{ guilds: true },
 		);
 		if (!UserInfo) {
 			throw new HttpException(

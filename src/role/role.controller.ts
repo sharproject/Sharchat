@@ -3,7 +3,14 @@ import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RoleService } from './role.service';
 import { Response } from 'express';
 import { AuthTag } from '../constant';
-import { Body, Delete, Param, Patch, Res } from '@nestjs/common/decorators';
+import {
+	Body,
+	Delete,
+	Get,
+	Param,
+	Patch,
+	Res,
+} from '@nestjs/common/decorators';
 import { CreateRoleInput, UpdateRoleInput } from '../typings';
 import { everyonePermissionDefault } from '../configuration/permissions';
 import { RoleEntity } from '../model/Role';
@@ -302,5 +309,41 @@ export class RoleController {
 			);
 		}
 		return this.roleService.RemoveMember(targetMember.id, targetRole.id);
+	}
+
+	@Get('/:id')
+	@ApiResponse({
+		status: HttpStatus.OK,
+		type: RoleEntity,
+	})
+	async GetRoleByID(
+		@Param('id') id: string,
+		@Res() res: Response,
+	): Promise<RoleEntity> {
+		/**
+		 * find member by id in database call with targetMember
+		 * find member by res.local.userId and targetMember.guildId
+		 *
+		 */
+		const targetMember = await this.roleService.findRoleById(id);
+		if (!targetMember)
+			throw new HttpException(
+				{
+					message: 'Member not found',
+				},
+				HttpStatus.NOT_FOUND,
+			);
+		const requestMember = await this.roleService.findMemberByUserIdAndGuildId(
+			res.locals.userId,
+			targetMember.guildId,
+		);
+		if (!requestMember)
+			throw new HttpException(
+				{
+					message: 'Member not found',
+				},
+				HttpStatus.NOT_FOUND,
+			);
+		return targetMember;
 	}
 }

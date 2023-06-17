@@ -30,9 +30,6 @@ export class RoleService {
 			},
 		});
 	}
-	GetRoleModel() {
-		return this.prismaService.role;
-	}
 	async findRoleById(id: string) {
 		return await this.prismaService.role.findFirst({
 			where: {
@@ -170,5 +167,8 @@ export class RoleService {
 				},
 			},
 		});
+	}
+	async findMemberByUserIdAndGuildId(userId: string, guildId: string) {
+		return await this.memberService.findMemberByUserIdAndGuildId(userId,guildId)
 	}
 }

@@ -5,22 +5,14 @@ import { everyonePermissionDefault } from '../configuration/permissions';
 import { UserService } from 'src/user/user.service';
 import { CreateGuildInput } from '../typings/Guild';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { GuildModule } from './guild.module';
-import { StringDecoder } from 'string_decoder';
-import { stringify } from 'querystring';
-import { isStringObject } from 'util/types';
-import { IsUUID } from 'class-validator';
-import { userInfo } from 'os';
-import { identity } from 'rxjs';
-import { StringArraySupportOption } from 'prettier';
 
 @Injectable()
 export class GuildService {
 	constructor(
-		public readonly prismaService: PrismaService,
 		public readonly memberService: MemberService,
 		public readonly roleService: RoleService,
 		public readonly userService: UserService,
+		public readonly prismaService: PrismaService,
 	) {}
 	async CreateNewGuildForRoute(
 		{ name, description = '' }: CreateGuildInput,

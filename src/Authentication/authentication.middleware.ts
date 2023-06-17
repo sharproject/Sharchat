@@ -8,12 +8,8 @@ import { AuthenticationService } from './authentication.service';
 export class AuthenticationMiddleware implements NestMiddleware {
 	constructor(private readonly AuthService: AuthenticationService) {}
 
-	async use(
-		req: Request,
-		res: Response<UnAuthentication>,
-		next: NextFunction,
-	) {
-		const token = req.headers['authorization'];
+	async use(req: Request, res: Response<UnAuthentication>, next: NextFunction) {
+		const token = req.headers['authorization'] || req.cookies['authorization'];
 		if (!token) {
 			return res.status(401).json({
 				message: 'No token provided',
@@ -22,6 +18,7 @@ export class AuthenticationMiddleware implements NestMiddleware {
 		try {
 			const decoded = await this.AuthService.VerifyToken(token);
 			if (decoded instanceof Error) {
+				res.clearCookie('authorization');
 				return res.status(401).json({
 					message: decoded.message,
 				});

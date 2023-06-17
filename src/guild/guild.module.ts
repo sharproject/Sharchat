@@ -21,7 +21,7 @@ import { PrismaModule } from 'src/prisma/prisma.module';
 		MemberModule.GetMemberModel(),
 		RoleModule.GetRoleModule(),
 		UserModule.GetUserModule(),
-		PrismaModule
+		PrismaModule,
 	],
 	exports: [GuildService],
 	providers: [GuildService],
@@ -43,6 +43,7 @@ export class GuildModule implements NestModule {
 				MemberModule.GetMemberModel(),
 				RoleModule.GetRoleModule(),
 				UserModule.GetUserModule(),
+				PrismaModule,
 			],
 			exports: [GuildService],
 			providers: [GuildService],

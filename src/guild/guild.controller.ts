@@ -28,12 +28,7 @@ import { AuthTag } from '../constant';
 @ApiBearerAuth()
 @Controller('guild')
 export class GuildController {
-	constructor(
-		private readonly guildService: GuildService,
-		private readonly guildModel: GuildModule,
-
-		private readonly prismaService: PrismaService,
-	) {}
+	constructor(private readonly guildService: GuildService) {}
 
 	@ApiResponse({
 		status: HttpStatus.CREATED,
@@ -67,8 +62,7 @@ export class GuildController {
 				guild.id,
 			);
 
-		/*guild.role.push(EveryOneRole);*/
-		this.prismaService.guild.update({
+		this.guildService.prismaService.guild.update({
 			where: {
 				id: guild.id,
 			},
@@ -78,23 +72,9 @@ export class GuildController {
 						id: EveryOneRole.id,
 					},
 				},
-			},
-		});
-
-		//======================================================
-
-		/*guild.everyoneRoleId = EveryOneRole;*/
-		//after
-		await this.prismaService.guild.update({
-			where: {
-				id: guild.id,
-			},
-			data: {
 				everyoneRoleId: EveryOneRole.id,
 			},
 		});
-
-		//======================================================
 
 		const member = await this.guildService.OnlyThisModule_CreateMember(
 			guild.id,
