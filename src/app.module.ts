@@ -6,6 +6,7 @@ import { join } from 'path';
 import { GuildModule } from './guild/guild.module';
 import { MemberModule } from './member/member.module';
 import { RoleModule } from './role/role.module';
+import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
 	imports: [
@@ -18,6 +19,7 @@ import { RoleModule } from './role/role.module';
 		GuildModule,
 		MemberModule,
 		RoleModule,
+		PrismaModule,
 	],
 	controllers: [],
 	providers: [],

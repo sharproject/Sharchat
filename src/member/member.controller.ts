@@ -2,8 +2,10 @@ import {
 	Body,
 	Controller,
 	Delete,
+	Get,
 	HttpException,
 	HttpStatus,
+	Param,
 	Post,
 	Res,
 } from '@nestjs/common';
@@ -17,6 +19,7 @@ import {
 	LeaveGuildResponse,
 } from '../typings';
 import { AuthTag } from '../constant';
+import { MemberEntity } from '../model/Member';
 
 @ApiTags('member', AuthTag)
 @ApiBearerAuth()
@@ -54,7 +57,7 @@ export class MemberController {
 
 		let member = await this.memberService.findMemberByUserIdAndGuildId(
 			res.locals.userId,
-			guild._id,
+			guild.id,
 		);
 
 		if (member && !member.removed) {
@@ -65,16 +68,15 @@ export class MemberController {
 				member,
 			};
 		} else if (member && member.removed) {
-			member.removed = !member.removed;
 			return {
 				message: 'Joined guild',
 				Joined: true,
 				guild,
-				member: await member.save(),
+				member: await this.memberService.setRemoved(member.id, !member.removed),
 			};
 		}
 		const everyoneRole = await this.memberService.findRoleById(
-			guild.everyoneRole._id,
+			guild.everyoneRoleId,
 		);
 		if (!everyoneRole) {
 			throw new HttpException(
@@ -85,13 +87,20 @@ export class MemberController {
 			);
 		}
 		member = await this.memberService.MemberUtilCreateMember(
-			guild._id,
+			guild.id,
 			res.locals.userId,
 			{
 				isOwner: false,
 			},
 		);
-
+		if (!member) {
+			throw new HttpException(
+				{
+					message: 'INTERNAL SERVER ERROR - to đùng',
+				},
+				HttpStatus.INTERNAL_SERVER_ERROR,
+			);
+		}
 		return {
 			message: 'Joined guild',
 			Joined: false,
@@ -131,7 +140,7 @@ export class MemberController {
 
 		let member = await this.memberService.findMemberByUserIdAndGuildId(
 			res.locals.userId,
-			guild._id,
+			guild.id,
 		);
 
 		if (!member) {
@@ -143,7 +152,7 @@ export class MemberController {
 			);
 		}
 
-		if (member.user._id == guild.owner._id) {
+		if (member.userId == guild.ownerID) {
 			throw new HttpException(
 				{
 					message:
@@ -154,7 +163,7 @@ export class MemberController {
 		}
 
 		member = await this.memberService.MemberUtilDeleteMember(
-			guild._id,
+			guild.id,
 			res.locals.userId,
 		);
 		guild = await this.memberService.findGuildById(id);
@@ -171,5 +180,41 @@ export class MemberController {
 			guild,
 			member,
 		};
+	}
+
+	@Get('/:id')
+	@ApiResponse({
+		status: HttpStatus.OK,
+		type: MemberEntity,
+	})
+	async GetMemberByID(
+		@Param('id') id: string,
+		@Res() res: Response,
+	): Promise<MemberEntity> {
+		/**
+		 * find member by id in database call with targetMember
+		 * find member by res.local.userId and targetMember.guildId
+		 *
+		 */
+		const targetMember = await this.memberService.findMemberById(id);
+		if (!targetMember)
+			throw new HttpException(
+				{
+					message: 'Member not found',
+				},
+				HttpStatus.NOT_FOUND,
+			);
+		const requestMember = await this.memberService.findMemberByUserIdAndGuildId(
+			res.locals.userId,
+			targetMember.guildId,
+		);
+		if (!requestMember)
+			throw new HttpException(
+				{
+					message: 'Member not found',
+				},
+				HttpStatus.NOT_FOUND,
+			);
+		return targetMember;
 	}
 }

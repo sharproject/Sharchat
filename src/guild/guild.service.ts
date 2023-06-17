@@ -1,37 +1,55 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { Guild, GuildDocument } from 'src/model/Guild';
 import { CreateMemberOption, MemberService } from '../member/member.service';
 import { RoleService } from '../role/role.service';
 import { everyonePermissionDefault } from '../configuration/permissions';
 import { UserService } from 'src/user/user.service';
 import { CreateGuildInput } from '../typings/Guild';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class GuildService {
 	constructor(
-		@InjectModel(Guild.name) private GuildModel: Model<GuildDocument>,
 		public readonly memberService: MemberService,
 		public readonly roleService: RoleService,
 		public readonly userService: UserService,
+		public readonly prismaService: PrismaService,
 	) {}
 	async CreateNewGuildForRoute(
-		{ name, description }: CreateGuildInput,
+		{ name, description = '' }: CreateGuildInput,
 		owner: string,
 	) {
 		const ownerObj = await this.userService.findUserByID(owner);
-		return await new this.GuildModel({
-			name,
-			description,
-			owner: ownerObj,
-		}).save();
+		if (!ownerObj) throw new Error('error cmnr');
+		return await this.prismaService.guild.create({
+			data: {
+				name: name,
+				description: description,
+				owner: {
+					connect: {
+						id: ownerObj.id,
+					},
+				},
+				everyoneRoleId: '',
+			},
+		});
 	}
-	async CreateGuild<T>(input: T) {
-		return await new this.GuildModel(input).save();
-	}
-	async findGuildById(id: string) {
-		return await this.GuildModel.findById(id);
+	async findGuildById<
+		T extends {
+			owner?: boolean;
+			members?: boolean;
+			channels?: boolean;
+			roles?: boolean;
+			_count?: boolean;
+		},
+	>(id: string, include?: T) {
+		return await this.prismaService.guild.findUnique({
+			where: {
+				id,
+			},
+			include: {
+				...include,
+			},
+		});
 	}
 
 	async OnlyThisModule_CreateMember(
@@ -48,9 +66,28 @@ export class GuildService {
 	async OnlyThisModule_CreateDefaultRoleForGuild(GuildID: string) {
 		return await this.roleService.CreateEveryoneRoleForGuild({
 			RoleName: '@everyone',
-			guild: GuildID,
+			guildId: GuildID,
 			permissions: everyonePermissionDefault,
 			position: 1,
+		});
+	}
+	async DeleteGuild(id: string) {
+		return await this.prismaService.guild.delete({
+			where: {
+				id,
+			},
+		});
+	}
+	async UpdateGuildInfo(
+		input: {
+			name: string;
+			description: string;
+		},
+		id: string,
+	) {
+		return await this.prismaService.guild.update({
+			where: { id },
+			data: { ...input },
 		});
 	}
 }

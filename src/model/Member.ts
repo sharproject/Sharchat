@@ -1,68 +1,47 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { HydratedDocument } from 'mongoose';
-import { Role } from './Role';
-import { Guild } from './Guild';
-import { User } from './User';
+import { RoleEntity } from './Role';
+import { GuildEntity } from './Guild';
+import { UserEntity } from './User';
 import { ApiProperty } from '@nestjs/swagger';
+import { Member } from '@prisma/client';
 
-export type MemberDocument = HydratedDocument<Member>;
-@Schema({
-	timestamps: true,
-})
-export class Member {
+export class MemberEntity implements Member {
 	constructor() {}
-	public _id: string;
+
+	public id: string;
 
 	@ApiProperty({
 		type: () => Date,
 	})
-	@Prop({ isRequired: true, default: Date.now(), type: Date })
 	public joinedAt: Date;
 
+	@ApiProperty()
+	guildId: string;
+	@ApiProperty()
+	userId: string;
+
 	@ApiProperty({
 		type: () => Date,
 	})
-	@Prop({ isRequired: true, default: Date.now(), type: Date })
 	public updatedAt: Date;
 
 	@ApiProperty({
-		type: () => User,
+		type: () => UserEntity,
 	})
-	@Prop({
-		isRequired: true,
-		type: mongoose.Types.ObjectId,
-		ref: 'User',
-	})
-	public user: User;
+	public user?: UserEntity;
 
 	@ApiProperty({
-		type: () => Guild,
+		type: () => GuildEntity,
 	})
-	@Prop({
-		isRequired: true,
-		type: mongoose.Types.ObjectId,
-		ref: 'Guild',
-	})
-	public guild: Guild;
+	public guild?: GuildEntity;
 
 	@ApiProperty({
-		type: () => [Role],
+		type: () => [RoleEntity],
 	})
-	@Prop({
-		isRequired: true,
-		default: [],
-		type: [{ type: mongoose.Types.ObjectId, ref: 'Role' }],
-	})
-	public Role: Array<Role>;
+	public Role?: Array<RoleEntity>;
 
 	@ApiProperty()
-	@Prop({ default: false, isRequired: true })
 	public isOwner: boolean;
 
 	@ApiProperty()
-	@Prop({ default: false, isRequired: true })
 	removed: boolean;
 }
-
-export const MemberSchema = SchemaFactory.createForClass(Member);
-MemberSchema.plugin(require('mongoose-autopopulate'));

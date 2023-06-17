@@ -1,37 +1,82 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { User, UserDocument } from '../model/User';
-import { Model } from 'mongoose';
-import mongoose from 'mongoose';
 import { RegisterUserInput } from '../typings';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class UserService {
-	constructor(
-		@InjectModel(User.name) private UserModel: Model<UserDocument>,
-	) {}
+	constructor(private prisma: PrismaService) {}
 	async findUserByEmail(email: string) {
-		return await this.UserModel.findOne({ email: email });
+		return await this.prisma.user.findFirst({
+			where: { email: email },
+			include: {
+				guilds: true,
+			},
+		});
 	}
 	async findUserByUsername(username: string) {
-		return await this.UserModel.findOne({ username: username });
+		return await this.prisma.user.findFirst({
+			where: { username: username },
+			include: {
+				guilds: true,
+			},
+		});
 	}
 	async CreateNewUser({ email, password, username }: RegisterUserInput) {
-		return await new this.UserModel({
-			email,
-			password,
-			username,
-		}).save();
+		return await this.prisma.user.create({
+			data: {
+				email,
+				password,
+				username,
+			},
+			include: {
+				guilds: true,
+			},
+		});
 	}
 
-	async findUserByID(id: string) {
-		return await this.UserModel.findById(id);
+	async findUserByID<
+		T extends {
+			guilds?: boolean;
+			Message?: boolean;
+		},
+	>(id: string, include?: T) {
+		return await this.prisma.user.findFirst({
+			where: {
+				id,
+			},
+			include: { ...include },
+		});
 	}
 	async DeleteGuildForUser(userID: string, guildId: string) {
-		return await this.UserModel.findByIdAndUpdate(userID, {
-			$pull: {
-				guilds: new mongoose.Types.ObjectId(guildId),
+		// userID;
+		// const a = {
+		// 	$pull: {
+		// 		guilds: new mongoose.Types.ObjectId(guildId),
+		// 	},
+		// };
+		return await this.prisma.user.update({
+			data: {
+				guilds: {
+					disconnect: {
+						id: guildId,
+					},
+				},
 			},
+			where: {
+				id: userID,
+			},
+		});
+	}
+	async UpdateUserGuild(userID: string, guildId: string) {
+		return await this.prisma.user.update({
+			data: {
+				guilds: {
+					connect: {
+						id: guildId,
+					},
+				},
+			},
+			where: { id: userID },
 		});
 	}
 }

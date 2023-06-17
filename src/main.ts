@@ -1,10 +1,11 @@
-import { NestFactory } from '@nestjs/core';
+import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { HttpExceptionFilter } from './util/http-exception.filter';
+import { PrismaClientExceptionFilter } from './util/prisma-client-exception.filter';
 
-export async function bootstrap() {
+async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
 
 	// setup class Validation
@@ -22,7 +23,9 @@ export async function bootstrap() {
 	SwaggerModule.setup('docs', app, document);
 
 	// error handling
+	const { httpAdapter } = app.get(HttpAdapterHost);
 	app.useGlobalFilters(new HttpExceptionFilter());
+	app.useGlobalFilters(new PrismaClientExceptionFilter(httpAdapter));
 
 	const PORT = Number(process.env.PORT || 8080);
 	await app.listen(PORT, () => {
