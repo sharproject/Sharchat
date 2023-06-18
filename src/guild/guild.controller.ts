@@ -1,8 +1,5 @@
-import { IsNotEmpty, IsOptional } from 'class-validator';
-import { PrismaService } from 'src/prisma/prisma.service';
 import { GuildService } from './guild.service';
 import { Response } from 'express';
-import { GuildModule } from './guild.module';
 import {
 	Body,
 	Controller,

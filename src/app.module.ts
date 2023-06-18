@@ -7,6 +7,7 @@ import { GuildModule } from './guild/guild.module';
 import { MemberModule } from './member/member.module';
 import { RoleModule } from './role/role.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { ChannelModule } from './channel/channel.module';
 
 @Module({
 	imports: [
@@ -19,6 +20,7 @@ import { PrismaModule } from './prisma/prisma.module';
 		GuildModule,
 		MemberModule,
 		RoleModule,
+		ChannelModule,
 		PrismaModule,
 	],
 	controllers: [],
