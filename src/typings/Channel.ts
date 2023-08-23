@@ -9,6 +9,10 @@ export class CreateChannelInput {
 	name: string;
 
 	@ApiProperty()
+	@IsNotEmpty()
+	guildID: string;
+
+	@ApiProperty()
 	@IsOptional()
 	description?: string;
 }

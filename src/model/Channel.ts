@@ -7,6 +7,9 @@ export class ChannelEntity implements Channel {
 	constructor() {}
 
 	@ApiProperty()
+	guildId: string;
+
+	@ApiProperty()
 	public id: string;
 
 	@ApiProperty({

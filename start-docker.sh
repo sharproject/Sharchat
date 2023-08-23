@@ -1,2 +1,2 @@
-npm run prisma:deploy
+yarn prisma:deploy
 npm run start:prod

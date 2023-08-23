@@ -38,7 +38,8 @@ export class ChannelController {
 		@Body() input: CreateChannelInput,
 	): Promise<CreateChannelResponse> {
 		const { name } = input;
-		if (!name) {
+		const guildID = input.guildID;
+		if (!name || !guildID) {
 			throw new HttpException(
 				{
 					message: 'Missing required fields',
@@ -50,7 +51,7 @@ export class ChannelController {
 
 		const channel = await this.channelService.CreateNewChannel({
 			name,
-			description,
+			description,guildID:guildID
 		});
 		const returnChannel = await this.channelService.findChannelById(channel.id);
 		if (!returnChannel)

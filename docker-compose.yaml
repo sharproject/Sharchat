@@ -14,6 +14,7 @@ services:
   postgres:
     container_name: postgres
     image: postgres:alpine
+    restart: always
     environment:
       - POSTGRES_PASSWORD=root
       - POSTGRES_USER=root
@@ -25,6 +26,7 @@ services:
     container_name: sharchat
     build: .
     image: tritranduc11/sharchat-main-server
+    restart: always
     env_file:
       - ./.env
       - ./.base.env

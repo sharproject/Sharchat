@@ -11,11 +11,12 @@ export class ChannelService {
 		public readonly userService: UserService,
 		public readonly roleService: RoleService,
 	) {}
-	async CreateNewChannel({ name, description }: CreateChannelInput) {
+	async CreateNewChannel({ name, description, guildID }: CreateChannelInput) {
 		return await this.prismaService.channel.create({
 			data: {
 				name,
 				description,
+				guildId: guildID,
 			},
 		});
 	}
@@ -61,11 +62,7 @@ export class ChannelService {
 	async ListChannelInGuild(guildID: string) {
 		return await this.prismaService.channel.findMany({
 			where: {
-				guild: {
-					every: {
-						id: guildID,
-					},
-				},
+				guildId: guildID,
 			},
 		});
 	}
