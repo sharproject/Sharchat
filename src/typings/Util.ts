@@ -1,7 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import permissions from '../configuration/permissions';
-import { IsString, } from 'class-validator';
-
+import { IsString } from 'class-validator';
 
 export class PermissionType {
 	@ApiProperty()

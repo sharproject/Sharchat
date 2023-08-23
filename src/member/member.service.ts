@@ -5,6 +5,7 @@ import permissions from 'src/configuration/permissions';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 import { PermissionType } from '../typings';
+import { DefaultArgs } from '@prisma/client/runtime/library';
 
 export interface CreateMemberOption {
 	isOwner: boolean;
@@ -15,8 +16,7 @@ export class MemberService {
 	constructor(
 		private readonly userService: UserService,
 		private readonly prismaService: PrismaService,
-	) 
-	{}
+	) {}
 	async MemberUtilCreateMember(
 		guildId: string | undefined,
 		userId: string | undefined,
@@ -306,12 +306,7 @@ export class PermissionUtilClass {
 			this.permission = [];
 		}
 	}
-	async addRole(
-		roleId: string,
-		RoleModel: Prisma.RoleDelegate<
-			Prisma.RejectOnNotFound | Prisma.RejectPerOperation | undefined
-		>,
-	) {
+	async addRole(roleId: string, RoleModel: Prisma.RoleDelegate<DefaultArgs>) {
 		const role = await RoleModel.findUnique({
 			where: {
 				id: roleId,
@@ -390,6 +385,12 @@ export class PermissionUtilClass {
 		return (
 			this.permission.includes('role_manager') &&
 			this.highestPosition > position
+		);
+	}
+	canSeeChannel(channelID: string) {
+		return (
+			this.metadata.ViewChannel.Allow.includes(channelID) ||
+			!this.metadata.ViewChannel.Block.includes(channelID)
 		);
 	}
 }

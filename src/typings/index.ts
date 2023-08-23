@@ -13,5 +13,5 @@ export * from './Error';
 export * from './Guild';
 export * from './Role';
 export * from './Member';
-export * from "./Util";
-export * from "./Channel";
+export * from './Util';
+export * from './Channel';

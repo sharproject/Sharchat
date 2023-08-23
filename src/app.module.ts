@@ -8,6 +8,7 @@ import { MemberModule } from './member/member.module';
 import { RoleModule } from './role/role.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ChannelModule } from './channel/channel.module';
+import { RedisModule } from './redis/redis.module';
 
 @Module({
 	imports: [
@@ -15,13 +16,14 @@ import { ChannelModule } from './channel/channel.module';
 			envFilePath: join(__dirname, '..', '.env'),
 			isGlobal: true,
 		}),
-		MongooseModule.forRoot(process.env.DB_URL || ''),
+		MongooseModule.forRoot(process.env.MONGO_DB_URL || ''),
 		UserModule,
 		GuildModule,
 		MemberModule,
 		RoleModule,
 		ChannelModule,
 		PrismaModule,
+		RedisModule,
 	],
 	controllers: [],
 	providers: [],

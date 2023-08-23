@@ -1,5 +1,5 @@
 services:
-  # will remove 
+  # will remove
   mongo-db:
     container_name: mongo-db
     image: mongo
@@ -10,7 +10,7 @@ services:
     volumes:
       - mongoDB:/data/db
     command: --quiet --logpath /dev/null
-    
+
   postgres:
     container_name: postgres
     image: postgres:alpine
@@ -20,16 +20,17 @@ services:
       - POSTGRES_DB=sharchat
     volumes:
       - postgres:/var/lib/postgresql/data
+
   server:
     container_name: sharchat
     build: .
+    image: tritranduc11/sharchat-main-server
     env_file:
       - ./.env
+      - ./.base.env
     ports:
-      - "8080:8080"
-    environment:
-      - DATABASE_URL=postgres://root:root@postgres:5432/sharchat
-    
+      - '8080:8080'
+
 volumes:
   mongoDB:
   postgres:

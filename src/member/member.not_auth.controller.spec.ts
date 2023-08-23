@@ -9,9 +9,7 @@ describe('MemberNotAuthController', () => {
 			controllers: [MemberNotAuthController],
 		}).compile();
 
-		controller = module.get<MemberNotAuthController>(
-			MemberNotAuthController,
-		);
+		controller = module.get<MemberNotAuthController>(MemberNotAuthController);
 	});
 
 	it('should be defined', () => {

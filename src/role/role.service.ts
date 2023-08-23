@@ -169,6 +169,9 @@ export class RoleService {
 		});
 	}
 	async findMemberByUserIdAndGuildId(userId: string, guildId: string) {
-		return await this.memberService.findMemberByUserIdAndGuildId(userId,guildId)
+		return await this.memberService.findMemberByUserIdAndGuildId(
+			userId,
+			guildId,
+		);
 	}
 }

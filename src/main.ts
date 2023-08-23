@@ -21,7 +21,7 @@ async function bootstrap() {
 		.build();
 	const document = SwaggerModule.createDocument(app, DocumentConfig);
 	SwaggerModule.setup('docs', app, document);
-
+	console.log({ MONGO_DB_URL: process.env.MONGO_DB_URL });
 	// error handling
 	const { httpAdapter } = app.get(HttpAdapterHost);
 	app.useGlobalFilters(new HttpExceptionFilter());

@@ -23,7 +23,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 	exports: [AuthenticationService],
 })
 export class AuthenticationModule implements NestModule {
-  use: any;
+	use: any;
 	constructor(private _authService: AuthenticationService) {}
 	configure(_consumer: MiddlewareConsumer) {}
 
