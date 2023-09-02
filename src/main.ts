@@ -6,6 +6,7 @@ import { HttpExceptionFilter } from './util/http-exception.filter';
 import { PrismaClientExceptionFilter } from './util/prisma-client-exception.filter';
 
 async function bootstrap() {
+	console.log({ MONGO_DB_URL: process.env.MONGO_DB_URL });
 	const app = await NestFactory.create(AppModule);
 
 	// setup class Validation
@@ -21,7 +22,7 @@ async function bootstrap() {
 		.build();
 	const document = SwaggerModule.createDocument(app, DocumentConfig);
 	SwaggerModule.setup('docs', app, document);
-	console.log({ MONGO_DB_URL: process.env.MONGO_DB_URL });
+
 	// error handling
 	const { httpAdapter } = app.get(HttpAdapterHost);
 	app.useGlobalFilters(new HttpExceptionFilter());

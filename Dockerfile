@@ -24,4 +24,4 @@ COPY --from=development /usr/src/app/dist ./dist
 COPY ./prisma/ ./prisma/
 COPY ./start-docker.sh ./start-docker.sh
 
-CMD ["./start-docker.sh"]
+CMD ["sh","./start-docker.sh"]
