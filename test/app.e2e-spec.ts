@@ -13,5 +13,10 @@ describe('AppController (e2e)', () => {
 
 		app = moduleFixture.createNestApplication();
 		await app.init();
+		const supertest = request(app.getHttpServer());
+		supertest.post('/auth/login').send({
+			username: 'test',
+			password: 'test',
+		});
 	});
 });

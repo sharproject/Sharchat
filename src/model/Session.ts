@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { HydratedDocument } from 'mongoose';
+import { HydratedDocument } from 'mongoose';
 
 export type SessionDocument = HydratedDocument<Session>;
 @Schema({
@@ -7,7 +7,6 @@ export type SessionDocument = HydratedDocument<Session>;
 	expireAfterSeconds: 60 * 60 * 24,
 })
 export class Session {
-	constructor() {}
 	public _id: string;
 
 	@Prop({
@@ -24,4 +23,3 @@ export class Session {
 }
 
 export const SessionSchema = SchemaFactory.createForClass(Session);
-SessionSchema.plugin(require('mongoose-autopopulate'));

@@ -3,7 +3,6 @@ import { GuildEntity } from './Guild';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UserEntity implements User {
-	constructor() {}
 	@ApiProperty({
 		description: 'Username',
 	})

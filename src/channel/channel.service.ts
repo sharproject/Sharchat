@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateChannelInput } from 'src/typings/Channel';
-import { UserService } from 'src/user/user.service';
+import { PrismaService } from '../prisma/prisma.service';
+import { CreateChannelInput } from '../typings/Channel';
+import { UserService } from '../user/user.service';
 import { RoleService } from '../role/role.service';
 
 @Injectable()

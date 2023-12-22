@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { ChannelService } from './channel.service';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import { AuthTag } from 'src/constant';
+import { AuthTag } from '../constant';
 import {
 	CreateChannelInput,
 	CreateChannelResponse,
@@ -20,7 +20,7 @@ import {
 	DeleteChannelResponse,
 	EditChannelInput,
 	EditChannelResponse,
-} from 'src/typings/Channel';
+} from '../typings/Channel';
 import { Response } from 'express';
 import { ChannelEntity } from '../model/Channel';
 
@@ -51,7 +51,8 @@ export class ChannelController {
 
 		const channel = await this.channelService.CreateNewChannel({
 			name,
-			description,guildID:guildID
+			description,
+			guildID: guildID,
 		});
 		const returnChannel = await this.channelService.findChannelById(channel.id);
 		if (!returnChannel)

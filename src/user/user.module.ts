@@ -7,10 +7,10 @@ import {
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { AuthenticationModule } from '../Authentication/authentication.module';
-import { AuthenticationService } from 'src/Authentication/authentication.service';
-import { AuthenticationMiddleware } from 'src/Authentication/authentication.middleware';
+import { AuthenticationService } from '../Authentication/authentication.service';
+import { AuthenticationMiddleware } from '../Authentication/authentication.middleware';
 import { UserAuthController } from './user.auth.controller';
-import { PrismaModule } from 'src/prisma/prisma.module';
+import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({
 	controllers: [UserController, UserAuthController],

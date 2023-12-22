@@ -4,8 +4,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Channel } from '@prisma/client';
 
 export class ChannelEntity implements Channel {
-	constructor() {}
-
 	@ApiProperty()
 	guildId: string;
 

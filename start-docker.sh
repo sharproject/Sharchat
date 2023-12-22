@@ -1,2 +1,2 @@
-npm run prisma:deploy
+cat package.json && sleep 10
 npm run start:prod

@@ -8,12 +8,12 @@ import { GuildService } from './guild.service';
 import { GuildController } from './guild.controller';
 import { AuthenticationModule } from '../Authentication/authentication.module';
 import { AuthenticationMiddleware } from '../Authentication/authentication.middleware';
-import { AuthenticationService } from 'src/Authentication/authentication.service';
+import { AuthenticationService } from '../Authentication/authentication.service';
 import { MemberModule } from '../member/member.module';
 import { RoleModule } from '../role/role.module';
-import { UserModule } from 'src/user/user.module';
+import { UserModule } from '..user.auth.controller.spec';
 import { GuildNotAuthController } from './guild.not_auth.controller';
-import { PrismaModule } from 'src/prisma/prisma.module';
+import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({
 	imports: [

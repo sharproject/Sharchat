@@ -1,7 +1,6 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
-import {} from '@nestjs/swagger';
 import { NextFunction, Request, Response } from 'express';
-import { UnAuthentication } from 'src/typings/Error';
+import { UnAuthentication } from '../typings/Error';
 import { AuthenticationService } from './authentication.service';
 
 @Injectable()

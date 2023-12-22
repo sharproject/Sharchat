@@ -6,11 +6,11 @@ import {
 } from '@nestjs/common';
 import { ChannelService } from './channel.service';
 import { ChannelController } from './channel.controller';
-import { PrismaModule } from 'src/prisma/prisma.module';
-import { AuthenticationService } from 'src/Authentication/authentication.service';
-import { AuthenticationModule } from 'src/Authentication/authentication.module';
-import { AuthenticationMiddleware } from 'src/Authentication/authentication.middleware';
-import { UserModule } from 'src/user/user.module';
+import { PrismaModule } from '../prisma/prisma.module';
+import { AuthenticationService } from '../Authentication/authentication.service';
+import { AuthenticationModule } from '../Authentication/authentication.module';
+import { AuthenticationMiddleware } from '../Authentication/authentication.middleware';
+import { UserModule } from '../user/user.module';
 import { RoleModule } from '../role/role.module';
 
 @Module({

@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { CreateMemberOption, MemberService } from '../member/member.service';
 import { RoleService } from '../role/role.service';
 import { everyonePermissionDefault } from '../configuration/permissions';
-import { UserService } from 'src/user/user.service';
+import { UserService } from '../user/user.service';
 import { CreateGuildInput } from '../typings/Guild';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class GuildService {

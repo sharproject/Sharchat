@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsOptional } from 'class-validator';
 import { BaseControllerResponse } from '.';
-import { ChannelEntity } from 'src/model/Channel';
+import { ChannelEntity } from '../model/Channel';
 
 export class CreateChannelInput {
 	@ApiProperty()

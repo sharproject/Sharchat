@@ -1,4 +1,4 @@
-import { PermissionType } from 'src/typings';
+import { PermissionType } from '../typings';
 
 const permissions = {
 	admin: 'Server Administrator',

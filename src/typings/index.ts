@@ -1,5 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { from } from 'rxjs';
 
 export class BaseControllerResponse {
 	@ApiProperty({

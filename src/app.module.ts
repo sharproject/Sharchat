@@ -8,7 +8,7 @@ import { MemberModule } from './member/member.module';
 import { RoleModule } from './role/role.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ChannelModule } from './channel/channel.module';
-import { RedisModule } from './redis/redis.module';
+import { WsModule } from './ws/ws.module';
 
 @Module({
 	imports: [
@@ -23,7 +23,7 @@ import { RedisModule } from './redis/redis.module';
 		RoleModule,
 		ChannelModule,
 		PrismaModule,
-		RedisModule,
+		WsModule,
 	],
 	controllers: [],
 	providers: [],

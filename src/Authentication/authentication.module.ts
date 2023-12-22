@@ -25,7 +25,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 export class AuthenticationModule implements NestModule {
 	use: any;
 	constructor(private _authService: AuthenticationService) {}
-	configure(_consumer: MiddlewareConsumer) {}
+	// eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
+	configure(_: MiddlewareConsumer) {}
 
 	static GetAuthUtil(...anotherProvider: Provider[]): DynamicModule {
 		return {

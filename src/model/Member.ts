@@ -5,8 +5,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Member } from '@prisma/client';
 
 export class MemberEntity implements Member {
-	constructor() {}
-
 	public id: string;
 
 	@ApiProperty({

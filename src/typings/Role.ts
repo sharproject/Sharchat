@@ -26,7 +26,7 @@ export class CreateRoleInput {
 
 	@ApiProperty()
 	@IsBoolean()
-	hide: boolean = false;
+	hide = false;
 
 	@ApiProperty()
 	@IsNumber({})

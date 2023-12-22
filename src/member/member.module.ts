@@ -8,9 +8,9 @@ import { MemberService } from './member.service';
 import { MemberController } from './member.controller';
 import { UserModule } from '../user/user.module';
 import { MemberNotAuthController } from './member.not_auth.controller';
-import { AuthenticationMiddleware } from 'src/Authentication/authentication.middleware';
-import { AuthenticationModule } from 'src/Authentication/authentication.module';
-import { AuthenticationService } from 'src/Authentication/authentication.service';
+import { AuthenticationMiddleware } from '../Authentication/authentication.middleware';
+import { AuthenticationModule } from '../Authentication/authentication.module';
+import { AuthenticationService } from '../Authentication/authentication.service';
 import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({

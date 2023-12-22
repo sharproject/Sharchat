@@ -13,7 +13,7 @@ import {
 	ApiResponse,
 	ApiTags,
 } from '@nestjs/swagger';
-import { UserInfoControllerReturn } from 'src/typings';
+import { UserInfoControllerReturn } from '../typings';
 import { AuthTag } from '../constant';
 
 @ApiTags('user', AuthTag)

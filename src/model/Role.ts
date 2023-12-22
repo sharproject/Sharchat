@@ -1,12 +1,10 @@
 import { GuildEntity } from './Guild';
 import { MemberEntity } from './Member';
 import { ApiProperty } from '@nestjs/swagger';
-import { PermissionType } from '../typings';
+// import { PermissionType } from '../typings';
 import { Role } from '@prisma/client';
 
 export class RoleEntity implements Role {
-	constructor() {}
-
 	guildId: string;
 
 	@ApiProperty()
